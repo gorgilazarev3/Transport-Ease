@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -72,6 +73,8 @@ class _MyAppState extends State<TransportEaseApp> {
     );
   }
 }
+
+DatabaseReference usersRef = FirebaseDatabase.instance.ref().child("users");
 
 class TransportEaseApp extends StatefulWidget {
   const TransportEaseApp({super.key});

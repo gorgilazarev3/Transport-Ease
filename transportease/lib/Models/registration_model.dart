@@ -23,6 +23,12 @@ class RegistrationPageModel extends FlutterFlowModel {
   // State field(s) for emailAddress widget.
   TextEditingController? emailAddressController1;
   String? Function(BuildContext, String?)? emailAddressController1Validator;
+  // State field(s) for name widget.
+  TextEditingController? nameController;
+  String? Function(BuildContext, String?)? nameValidator;
+  // State field(s) for phoneNumber widget.
+  TextEditingController? phoneNumberController;
+  String? Function(BuildContext, String?)? phoneNumberControllerValidator;
   // State field(s) for password widget.
   TextEditingController? passwordController1;
   late bool passwordVisibility1;
@@ -55,6 +61,7 @@ class RegistrationPageModel extends FlutterFlowModel {
     confirmPasswordController?.dispose();
     emailAddressController2?.dispose();
     passwordController2?.dispose();
+    phoneNumberController?.dispose();
   }
 
   /// Action blocks are added here.

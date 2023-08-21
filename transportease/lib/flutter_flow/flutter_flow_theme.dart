@@ -254,58 +254,58 @@ class MobileTypography extends Typography {
         fontWeight: FontWeight.w500,
         fontSize: 22.0,
       );
-  String get titleMediumFamily => 'Lato';
+  String get titleMediumFamily => 'Open Sans';
   TextStyle get titleMedium => GoogleFonts.getFont(
-        'Lato',
+        'Open Sans',
         color: theme.info,
         fontWeight: FontWeight.normal,
         fontSize: 18.0,
       );
-  String get titleSmallFamily => 'Lato';
+  String get titleSmallFamily => 'Open Sans';
   TextStyle get titleSmall => GoogleFonts.getFont(
-        'Lato',
+        'Open Sans',
         color: theme.info,
         fontWeight: FontWeight.w500,
         fontSize: 16.0,
       );
-  String get labelLargeFamily => 'Lato';
+  String get labelLargeFamily => 'Open Sans';
   TextStyle get labelLarge => GoogleFonts.getFont(
-        'Lato',
+        'Open Sans',
         color: theme.secondaryText,
         fontWeight: FontWeight.normal,
         fontSize: 16.0,
       );
-  String get labelMediumFamily => 'Lato';
+  String get labelMediumFamily => 'Open Sans';
   TextStyle get labelMedium => GoogleFonts.getFont(
-        'Lato',
+        'Open Sans',
         color: theme.secondaryText,
         fontWeight: FontWeight.normal,
         fontSize: 14.0,
       );
-  String get labelSmallFamily => 'Lato';
+  String get labelSmallFamily => 'Open Sans';
   TextStyle get labelSmall => GoogleFonts.getFont(
-        'Lato',
+        'Open Sans',
         color: theme.secondaryText,
         fontWeight: FontWeight.normal,
         fontSize: 12.0,
       );
-  String get bodyLargeFamily => 'Lato';
+  String get bodyLargeFamily => 'Open Sans';
   TextStyle get bodyLarge => GoogleFonts.getFont(
-        'Lato',
+        'Open Sans',
         color: theme.primaryText,
         fontWeight: FontWeight.normal,
         fontSize: 16.0,
       );
-  String get bodyMediumFamily => 'Lato';
+  String get bodyMediumFamily => 'Open Sans';
   TextStyle get bodyMedium => GoogleFonts.getFont(
-        'Lato',
+        'Open Sans',
         color: theme.primaryText,
         fontWeight: FontWeight.normal,
         fontSize: 14.0,
       );
-  String get bodySmallFamily => 'Lato';
+  String get bodySmallFamily => 'Open Sans';
   TextStyle get bodySmall => GoogleFonts.getFont(
-        'Lato',
+        'Open Sans',
         color: theme.primaryText,
         fontWeight: FontWeight.normal,
         fontSize: 12.0,
@@ -366,58 +366,58 @@ class TabletTypography extends Typography {
         fontWeight: FontWeight.w500,
         fontSize: 22.0,
       );
-  String get titleMediumFamily => 'Lato';
+  String get titleMediumFamily => 'Open Sans';
   TextStyle get titleMedium => GoogleFonts.getFont(
-        'Lato',
+        'Open Sans',
         color: theme.info,
         fontWeight: FontWeight.normal,
         fontSize: 18.0,
       );
-  String get titleSmallFamily => 'Lato';
+  String get titleSmallFamily => 'Open Sans';
   TextStyle get titleSmall => GoogleFonts.getFont(
-        'Lato',
+        'Open Sans',
         color: theme.info,
         fontWeight: FontWeight.w500,
         fontSize: 16.0,
       );
-  String get labelLargeFamily => 'Lato';
+  String get labelLargeFamily => 'Open Sans';
   TextStyle get labelLarge => GoogleFonts.getFont(
-        'Lato',
+        'Open Sans',
         color: theme.secondaryText,
         fontWeight: FontWeight.normal,
         fontSize: 16.0,
       );
-  String get labelMediumFamily => 'Lato';
+  String get labelMediumFamily => 'Open Sans';
   TextStyle get labelMedium => GoogleFonts.getFont(
-        'Lato',
+        'Open Sans',
         color: theme.secondaryText,
         fontWeight: FontWeight.normal,
         fontSize: 14.0,
       );
-  String get labelSmallFamily => 'Lato';
+  String get labelSmallFamily => 'Open Sans';
   TextStyle get labelSmall => GoogleFonts.getFont(
-        'Lato',
+        'Open Sans',
         color: theme.secondaryText,
         fontWeight: FontWeight.normal,
         fontSize: 12.0,
       );
-  String get bodyLargeFamily => 'Lato';
+  String get bodyLargeFamily => 'Open Sans';
   TextStyle get bodyLarge => GoogleFonts.getFont(
-        'Lato',
+        'Open Sans',
         color: theme.primaryText,
         fontWeight: FontWeight.normal,
         fontSize: 16.0,
       );
-  String get bodyMediumFamily => 'Lato';
+  String get bodyMediumFamily => 'Open Sans';
   TextStyle get bodyMedium => GoogleFonts.getFont(
-        'Lato',
+        'Open Sans',
         color: theme.primaryText,
         fontWeight: FontWeight.normal,
         fontSize: 14.0,
       );
-  String get bodySmallFamily => 'Lato';
+  String get bodySmallFamily => 'Open Sans';
   TextStyle get bodySmall => GoogleFonts.getFont(
-        'Lato',
+        'Open Sans',
         color: theme.primaryText,
         fontWeight: FontWeight.normal,
         fontSize: 12.0,
@@ -478,58 +478,58 @@ class DesktopTypography extends Typography {
         fontWeight: FontWeight.w500,
         fontSize: 22.0,
       );
-  String get titleMediumFamily => 'Lato';
+  String get titleMediumFamily => 'Open Sans';
   TextStyle get titleMedium => GoogleFonts.getFont(
-        'Lato',
+        'Open Sans',
         color: theme.info,
         fontWeight: FontWeight.normal,
         fontSize: 18.0,
       );
-  String get titleSmallFamily => 'Lato';
+  String get titleSmallFamily => 'Open Sans';
   TextStyle get titleSmall => GoogleFonts.getFont(
-        'Lato',
+        'Open Sans',
         color: theme.info,
         fontWeight: FontWeight.w500,
         fontSize: 16.0,
       );
-  String get labelLargeFamily => 'Lato';
+  String get labelLargeFamily => 'Open Sans';
   TextStyle get labelLarge => GoogleFonts.getFont(
-        'Lato',
+        'Open Sans',
         color: theme.secondaryText,
         fontWeight: FontWeight.normal,
         fontSize: 16.0,
       );
-  String get labelMediumFamily => 'Lato';
+  String get labelMediumFamily => 'Open Sans';
   TextStyle get labelMedium => GoogleFonts.getFont(
-        'Lato',
+        'Open Sans',
         color: theme.secondaryText,
         fontWeight: FontWeight.normal,
         fontSize: 14.0,
       );
-  String get labelSmallFamily => 'Lato';
+  String get labelSmallFamily => 'Open Sans';
   TextStyle get labelSmall => GoogleFonts.getFont(
-        'Lato',
+        'Open Sans',
         color: theme.secondaryText,
         fontWeight: FontWeight.normal,
         fontSize: 12.0,
       );
-  String get bodyLargeFamily => 'Lato';
+  String get bodyLargeFamily => 'Open Sans';
   TextStyle get bodyLarge => GoogleFonts.getFont(
-        'Lato',
+        'Open Sans',
         color: theme.primaryText,
         fontWeight: FontWeight.normal,
         fontSize: 16.0,
       );
-  String get bodyMediumFamily => 'Lato';
+  String get bodyMediumFamily => 'Open Sans';
   TextStyle get bodyMedium => GoogleFonts.getFont(
-        'Lato',
+        'Open Sans',
         color: theme.primaryText,
         fontWeight: FontWeight.normal,
         fontSize: 14.0,
       );
-  String get bodySmallFamily => 'Lato';
+  String get bodySmallFamily => 'Open Sans';
   TextStyle get bodySmall => GoogleFonts.getFont(
-        'Lato',
+        'Open Sans',
         color: theme.primaryText,
         fontWeight: FontWeight.normal,
         fontSize: 12.0,

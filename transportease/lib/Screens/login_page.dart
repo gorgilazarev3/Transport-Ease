@@ -1,3 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
+import '../main.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -303,6 +308,8 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                                       0.0, 0.0, 0.0, 16.0),
                                   child: FFButtonWidget(
                                     onPressed: () async {
+                                      authenticate(context);
+
                                       // GoRouter.of(context).prepareAuthEvent();
 
                                       // final user =
@@ -567,5 +574,53 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
         ),
       ),
     );
+  }
+
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+
+  bool validateFields(BuildContext context) {
+    bool result = false;
+
+    if (_model.passwordController.text.isEmpty) {
+      Fluttertoast.showToast(msg: "Мора да внесете лозинка за да се најавите!");
+    } else if (!_model.emailAddressController.text.contains("@")) {
+      Fluttertoast.showToast(msg: "Ве молиме внесете валидна емаил адреса.");
+    } else {
+      result = true;
+    }
+    return result;
+  }
+
+  void authenticate(BuildContext context) async {
+    if (validateFields(context)) {
+      final User? firebaseUser = (await _firebaseAuth
+              .signInWithEmailAndPassword(
+                  email: _model.emailAddressController.text,
+                  password: _model.passwordController.text)
+              .catchError((errMsg) {
+        Fluttertoast.showToast(msg: "Настана грешка: " + errMsg);
+      }))
+          .user;
+      if (firebaseUser == null) {
+        Fluttertoast.showToast(
+            msg:
+                "Не постои корисник со такви информации. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
+      } else {
+        usersRef
+            .child(firebaseUser.uid)
+            .once()
+            .then((value) => (DataSnapshot snap) {
+                  if (snap.value != null) {
+                    Fluttertoast.showToast(msg: "Успешно се најавивте!");
+                    context.go("/home");
+                  } else {
+                    _firebaseAuth.signOut();
+                    Fluttertoast.showToast(
+                        msg:
+                            "Не постои корисник со такви информации. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
+                  }
+                });
+      }
+    }
   }
 }

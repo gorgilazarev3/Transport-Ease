@@ -1,3 +1,5 @@
+import 'dart:js_interop';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -151,7 +153,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                                                 FlutterFlowTheme.of(context)
                                                     .titleMediumFamily,
                                             color: FlutterFlowTheme.of(context)
-                                                .secondaryText,
+                                                .alternate,
                                             useGoogleFonts: GoogleFonts.asMap()
                                                 .containsKey(
                                                     FlutterFlowTheme.of(context)
@@ -228,7 +230,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                                                 FlutterFlowTheme.of(context)
                                                     .titleMediumFamily,
                                             color: FlutterFlowTheme.of(context)
-                                                .secondaryText,
+                                                .alternate,
                                             useGoogleFonts: GoogleFonts.asMap()
                                                 .containsKey(
                                                     FlutterFlowTheme.of(context)
@@ -593,33 +595,54 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
 
   void authenticate(BuildContext context) async {
     if (validateFields(context)) {
-      final User? firebaseUser = (await _firebaseAuth
-              .signInWithEmailAndPassword(
-                  email: _model.emailAddressController.text,
-                  password: _model.passwordController.text)
-              .catchError((errMsg) {
-        Fluttertoast.showToast(msg: "Настана грешка: " + errMsg);
-      }))
-          .user;
-      if (firebaseUser == null) {
-        Fluttertoast.showToast(
-            msg:
-                "Не постои корисник со такви информации. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
-      } else {
-        usersRef
-            .child(firebaseUser.uid)
-            .once()
-            .then((value) => (DataSnapshot snap) {
-                  if (snap.value != null) {
-                    Fluttertoast.showToast(msg: "Успешно се најавивте!");
-                    context.go("/home");
-                  } else {
-                    _firebaseAuth.signOut();
-                    Fluttertoast.showToast(
-                        msg:
-                            "Не постои корисник со такви информации. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
-                  }
-                });
+      // final User? firebaseUser = (await _firebaseAuth
+      //         .signInWithEmailAndPassword(
+      //             email: _model.emailAddressController.text,
+      //             password: _model.passwordController.text)
+      //         .catchError((errMsg) {
+      //   Fluttertoast.showToast(msg: "Настана грешка: " + errMsg);
+      // }))
+      //     .user;
+      // if (firebaseUser == null) {
+      //   Fluttertoast.showToast(
+      //       msg:
+      //           "Не постои корисник со такви информации. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
+      // } else {
+      //   usersRef
+      //       .child(firebaseUser.uid)
+      //       .get()
+      //       .then((value) => (DataSnapshot snap) {
+      //             if (snap.isDefinedAndNotNull) {
+      // Fluttertoast.showToast(msg: "Успешно се најавивте!");
+      // context.go("/home");
+      //             } else {
+      //               _firebaseAuth.signOut();
+      //               Fluttertoast.showToast(
+      //                   msg:
+      //                       "Не постои корисник со такви информации. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
+      //             }
+      //           });
+      // }
+      try {
+        final UserCredential? firebaseUser =
+            (await _firebaseAuth.signInWithEmailAndPassword(
+                email: _model.emailAddressController.text,
+                password: _model.passwordController.text));
+
+        if (firebaseUser.isDefinedAndNotNull) {
+          Fluttertoast.showToast(msg: "Успешно се најавивте!");
+          context.go("/home");
+        }
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'user-not-found') {
+          Fluttertoast.showToast(
+              msg:
+                  "Не постои корисник со такви информации. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
+        } else if (e.code == 'wrong-password') {
+          Fluttertoast.showToast(
+              msg:
+                  "Погрешна лозинка. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
+        }
       }
     }
   }

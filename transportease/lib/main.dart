@@ -18,7 +18,9 @@ Future<void> main() async {
             apiKey: "AIzaSyDJDtIjXxPSPDfRwnKSO2gGvS3s7gdLAfs",
             appId: "1:376309427810:web:48af3118670cb068f02b3b",
             messagingSenderId: "376309427810",
-            projectId: "transportease-da2b7"));
+            projectId: "transportease-da2b7",
+            databaseURL:
+                "https://transportease-da2b7-default-rtdb.europe-west1.firebasedatabase.app"));
   }
   await Firebase.initializeApp();
 

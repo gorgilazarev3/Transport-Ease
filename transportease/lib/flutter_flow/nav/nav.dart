@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:transportease/Screens/landing_page.dart';
 import 'package:transportease/Screens/login_page.dart';
+import 'package:transportease/Screens/main_page.dart';
 import 'package:transportease/Screens/registration_page.dart';
 
 import '/index.dart';
@@ -48,7 +49,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: 'Дома',
           path: '/home',
-          builder: (context, params) => LandingPage(),
+          builder: (context, params) => MainPageWidget(),
         ),
         FFRoute(
           name: 'Логирајте се',

@@ -1,5 +1,7 @@
 // import '/auth/firebase_auth/auth_util.dart';
 // import '/flutter_flow/flutter_flow_animations.dart';
+import 'dart:js_interop';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -1969,33 +1971,54 @@ class _RegistrationPageWidgetState extends State<RegistrationPageWidget>
 
   void authenticate(BuildContext context) async {
     if (validateLoginFields(context)) {
-      final User? firebaseUser = (await _firebaseAuth
-              .signInWithEmailAndPassword(
-                  email: _model.emailAddressController2.text,
-                  password: _model.passwordController2.text)
-              .catchError((errMsg) {
-        Fluttertoast.showToast(msg: "Настана грешка: " + errMsg);
-      }))
-          .user;
-      if (firebaseUser == null) {
-        Fluttertoast.showToast(
-            msg:
-                "Не постои корисник со такви информации. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
-      } else {
-        usersRef
-            .child(firebaseUser.uid)
-            .once()
-            .then((value) => (DataSnapshot snap) {
-                  if (snap.value != null) {
-                    context.go("/home");
-                    Fluttertoast.showToast(msg: "Успешно се најавивте!");
-                  } else {
-                    _firebaseAuth.signOut();
-                    Fluttertoast.showToast(
-                        msg:
-                            "Не постои корисник со такви информации. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
-                  }
-                });
+      // final User? firebaseUser = (await _firebaseAuth
+      //         .signInWithEmailAndPassword(
+      //             email: _model.emailAddressController2.text,
+      //             password: _model.passwordController2.text)
+      //         .catchError((errMsg) {
+      //   Fluttertoast.showToast(msg: "Настана грешка: " + errMsg);
+      // }))
+      //     .user;
+      // if (firebaseUser == null) {
+      //   Fluttertoast.showToast(
+      //       msg:
+      //           "Не постои корисник со такви информации. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
+      // } else {
+      //   usersRef
+      //       .child(firebaseUser.uid)
+      //       .once()
+      //       .then((value) => (DataSnapshot snap) {
+      //             if (snap.value != null) {
+      //               context.go("/home");
+      //               Fluttertoast.showToast(msg: "Успешно се најавивте!");
+      //             } else {
+      //               _firebaseAuth.signOut();
+      //               Fluttertoast.showToast(
+      //                   msg:
+      //                       "Не постои корисник со такви информации. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
+      //             }
+      //           });
+      // }
+      try {
+        final UserCredential? firebaseUser =
+            (await _firebaseAuth.signInWithEmailAndPassword(
+                email: _model.emailAddressController2.text,
+                password: _model.passwordController2.text));
+
+        if (firebaseUser!.isDefinedAndNotNull) {
+          Fluttertoast.showToast(msg: "Успешно се најавивте!");
+          context.go("/home");
+        }
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'user-not-found') {
+          Fluttertoast.showToast(
+              msg:
+                  "Не постои корисник со такви информации. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
+        } else if (e.code == 'wrong-password') {
+          Fluttertoast.showToast(
+              msg:
+                  "Погрешна лозинка. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
+        }
       }
     }
   }

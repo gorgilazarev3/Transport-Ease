@@ -1,5 +1,3 @@
-import 'dart:js_interop';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -629,7 +627,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                 email: _model.emailAddressController.text,
                 password: _model.passwordController.text));
 
-        if (firebaseUser.isDefinedAndNotNull) {
+        if (firebaseUser != null) {
           Fluttertoast.showToast(msg: "Успешно се најавивте!");
           context.go("/home");
         }

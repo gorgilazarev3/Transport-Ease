@@ -70,6 +70,7 @@ dependencies:
   firebase_auth: ^4.7.3
   firebase_database: ^10.2.5
   cloud_firestore: ^4.8.5
+  wtf_sliding_sheet: ^1.1.0
 
 dev_dependencies:
   flutter_test:

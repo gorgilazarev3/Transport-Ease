@@ -1,6 +1,6 @@
 // import '/auth/firebase_auth/auth_util.dart';
 // import '/flutter_flow/flutter_flow_animations.dart';
-import 'dart:js_interop';
+//import 'dart:js_interop';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -2005,7 +2005,7 @@ class _RegistrationPageWidgetState extends State<RegistrationPageWidget>
                 email: _model.emailAddressController2.text,
                 password: _model.passwordController2.text));
 
-        if (firebaseUser!.isDefinedAndNotNull) {
+        if (firebaseUser != null) {
           Fluttertoast.showToast(msg: "Успешно се најавивте!");
           context.go("/home");
         }

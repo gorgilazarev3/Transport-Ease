@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:wtf_sliding_sheet/wtf_sliding_sheet.dart';
 
+import '../flutter_flow/flutter_flow_icon_button.dart';
 import '../flutter_flow/flutter_flow_theme.dart';
 
 class MainPageWidget extends StatefulWidget {
@@ -31,6 +32,243 @@ class _MainPageWidgetState extends State<MainPageWidget> {
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text("TransportEase"),
+      ),
+      drawer: Drawer(
+        elevation: 16,
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                SingleChildScrollView(
+                  child: Container(
+                    width: MediaQuery.sizeOf(context).width * 0.78,
+                    height: MediaQuery.sizeOf(context).height * 0.05,
+                    decoration: BoxDecoration(
+                      color: FlutterFlowTheme.of(context).accent1,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Align(
+                  alignment: AlignmentDirectional(0, 0),
+                  child: Padding(
+                    padding: EdgeInsetsDirectional.fromSTEB(15, 0, 0, 0),
+                    child: Container(
+                      width: MediaQuery.sizeOf(context).width * 0.7,
+                      height: MediaQuery.sizeOf(context).height * 0.2,
+                      decoration: BoxDecoration(),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          FlutterFlowIconButton(
+                            borderColor: FlutterFlowTheme.of(context).primary,
+                            borderRadius: 20,
+                            borderWidth: 1,
+                            buttonSize: MediaQuery.sizeOf(context).width * 0.13,
+                            fillColor:
+                                FlutterFlowTheme.of(context).secondaryText,
+                            icon: Icon(
+                              Icons.person,
+                              color: FlutterFlowTheme.of(context).primaryText,
+                              size: 24,
+                            ),
+                            onPressed: () {
+                              print('IconButton pressed ...');
+                            },
+                          ),
+                          Align(
+                            alignment: AlignmentDirectional(0, 0),
+                            child: Padding(
+                              padding:
+                                  EdgeInsetsDirectional.fromSTEB(25, 0, 0, 0),
+                              child: Text(
+                                'Име на корисник',
+                                style: FlutterFlowTheme.of(context)
+                                    .bodyLarge
+                                    .override(
+                                      fontFamily: FlutterFlowTheme.of(context)
+                                          .bodyLargeFamily,
+                                      fontWeight: FontWeight.w600,
+                                      useGoogleFonts: GoogleFonts.asMap()
+                                          .containsKey(
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyLargeFamily),
+                                    ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Divider(
+              thickness: 1,
+              color: FlutterFlowTheme.of(context).primaryText,
+            ),
+            Align(
+              alignment: AlignmentDirectional(0, 0),
+              child: Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Align(
+                      alignment: AlignmentDirectional(0, 0),
+                      child: Padding(
+                        padding: EdgeInsetsDirectional.fromSTEB(25, 0, 0, 0),
+                        child: Icon(
+                          Icons.history,
+                          color: FlutterFlowTheme.of(context).secondaryText,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsetsDirectional.fromSTEB(30, 0, 0, 0),
+                      child: Text(
+                        'Историја',
+                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                              fontFamily:
+                                  FlutterFlowTheme.of(context).bodyMediumFamily,
+                              fontWeight: FontWeight.w600,
+                              useGoogleFonts: GoogleFonts.asMap().containsKey(
+                                  FlutterFlowTheme.of(context)
+                                      .bodyMediumFamily),
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Align(
+              alignment: AlignmentDirectional(0, 0),
+              child: Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Align(
+                      alignment: AlignmentDirectional(0, 0),
+                      child: Padding(
+                        padding: EdgeInsetsDirectional.fromSTEB(25, 0, 0, 0),
+                        child: Icon(
+                          Icons.person,
+                          color: FlutterFlowTheme.of(context).secondaryText,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsetsDirectional.fromSTEB(30, 0, 0, 0),
+                      child: Text(
+                        'Посети го профилот',
+                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                              fontFamily:
+                                  FlutterFlowTheme.of(context).bodyMediumFamily,
+                              fontWeight: FontWeight.w600,
+                              useGoogleFonts: GoogleFonts.asMap().containsKey(
+                                  FlutterFlowTheme.of(context)
+                                      .bodyMediumFamily),
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Align(
+              alignment: AlignmentDirectional(0, 0),
+              child: Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Align(
+                      alignment: AlignmentDirectional(0, 0),
+                      child: Padding(
+                        padding: EdgeInsetsDirectional.fromSTEB(25, 0, 0, 0),
+                        child: Icon(
+                          Icons.info_rounded,
+                          color: FlutterFlowTheme.of(context).secondaryText,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsetsDirectional.fromSTEB(30, 0, 0, 0),
+                      child: Text(
+                        'За нас',
+                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                              fontFamily:
+                                  FlutterFlowTheme.of(context).bodyMediumFamily,
+                              fontWeight: FontWeight.w600,
+                              useGoogleFonts: GoogleFonts.asMap().containsKey(
+                                  FlutterFlowTheme.of(context)
+                                      .bodyMediumFamily),
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Container(
+              width: MediaQuery.sizeOf(context).width * 0.78,
+              height: MediaQuery.sizeOf(context).height * 0.5,
+              decoration: BoxDecoration(),
+            ),
+            Divider(
+              thickness: 1,
+              color: FlutterFlowTheme.of(context).primaryText,
+            ),
+            Align(
+              alignment: AlignmentDirectional(0, 0),
+              child: Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Align(
+                      alignment: AlignmentDirectional(0, 0),
+                      child: Padding(
+                        padding: EdgeInsetsDirectional.fromSTEB(25, 0, 0, 0),
+                        child: Icon(
+                          Icons.logout,
+                          color: FlutterFlowTheme.of(context).secondaryText,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsetsDirectional.fromSTEB(30, 0, 0, 0),
+                      child: Text(
+                        'Одјави се',
+                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                              fontFamily:
+                                  FlutterFlowTheme.of(context).bodyMediumFamily,
+                              fontWeight: FontWeight.w600,
+                              useGoogleFonts: GoogleFonts.asMap().containsKey(
+                                  FlutterFlowTheme.of(context)
+                                      .bodyMediumFamily),
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
       body: Stack(children: [
         SlidingSheet(

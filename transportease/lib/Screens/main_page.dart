@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:wtf_sliding_sheet/wtf_sliding_sheet.dart';
@@ -26,6 +27,25 @@ class _MainPageWidgetState extends State<MainPageWidget> {
 
   late GoogleMapController googleMapController;
 
+  GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
+
+  late Position currentPosition;
+
+  void locatePosition() async {
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        forceAndroidLocationManager: true);
+    currentPosition = position;
+
+    LatLng latLngPosition = LatLng(position.latitude, position.longitude);
+
+    CameraPosition cameraPosition =
+        new CameraPosition(target: latLngPosition, zoom: 14);
+
+    googleMapController
+        .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,7 +61,7 @@ class _MainPageWidgetState extends State<MainPageWidget> {
             Row(
               mainAxisSize: MainAxisSize.max,
               children: [
-                SingleChildScrollView(
+                Expanded(
                   child: Container(
                     width: MediaQuery.sizeOf(context).width * 0.78,
                     height: MediaQuery.sizeOf(context).height * 0.05,
@@ -288,10 +308,16 @@ class _MainPageWidgetState extends State<MainPageWidget> {
             body: GoogleMap(
               mapType: MapType.normal,
               myLocationButtonEnabled: true,
+              myLocationEnabled: true,
+              zoomGesturesEnabled: true,
+              zoomControlsEnabled: true,
               initialCameraPosition: _kGooglePlex,
+              padding: EdgeInsets.only(
+                  bottom: MediaQuery.sizeOf(context).height * 0.3),
               onMapCreated: (GoogleMapController controller) => {
                 _controller.complete(controller),
-                googleMapController = controller
+                googleMapController = controller,
+                locatePosition()
               },
             ),
             builder: (context, state) {

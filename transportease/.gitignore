@@ -44,7 +44,6 @@ app.*.map.json
 /android/app/release
 
 #Hidden secret files
-/android/app/src/main/AndroidManifest.xml
-/ios/Runner/AppDelegate.swift
+.env
 /lib/config_maps.dart
-/web/index.html
+

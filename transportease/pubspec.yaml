@@ -61,6 +61,8 @@ dependencies:
   url_launcher_platform_interface: 2.1.2
   fluttertoast: ^8.2.2
   google_maps_flutter: ^2.4.0
+  http: ^0.13.0
+  flutter_config: ^2.0.2
 
 
   # The following adds the Cupertino Icons font to your application.

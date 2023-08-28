@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_config/flutter_config.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:transportease/Screens/login_page.dart';
 
@@ -23,6 +24,10 @@ Future<void> main() async {
                 "https://transportease-da2b7-default-rtdb.europe-west1.firebasedatabase.app"));
   }
   await Firebase.initializeApp();
+
+  if (!kIsWeb) {
+    await FlutterConfig.loadEnvVariables();
+  }
 
   runApp(const TransportEaseApp());
 }

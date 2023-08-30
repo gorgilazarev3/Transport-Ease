@@ -4,10 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
+import 'package:transportease/AssistantFunctions/methods_assistants.dart';
+import 'package:transportease/Models/address.dart';
+import 'package:transportease/Screens/search_destination_component.dart';
 import 'package:wtf_sliding_sheet/wtf_sliding_sheet.dart';
 
+import '../DataHandler/app_data.dart';
 import '../flutter_flow/flutter_flow_icon_button.dart';
 import '../flutter_flow/flutter_flow_theme.dart';
+
+import 'package:transportease/AssistantFunctions/http_assistant.dart';
 
 class MainPageWidget extends StatefulWidget {
   const MainPageWidget({super.key});
@@ -31,6 +38,10 @@ class _MainPageWidgetState extends State<MainPageWidget> {
 
   late Position currentPosition;
 
+  bool searchDestShown = false;
+
+  bool get getSearchDestShown => searchDestShown;
+
   void locatePosition() async {
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
@@ -44,6 +55,10 @@ class _MainPageWidgetState extends State<MainPageWidget> {
 
     googleMapController
         .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+
+    Address address = await MethodsAssistants.getAddressFromCoordinates(
+        currentPosition, context);
+    print("This is your address: " + address.toString());
   }
 
   @override
@@ -52,6 +67,7 @@ class _MainPageWidgetState extends State<MainPageWidget> {
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text("TransportEase"),
+        backgroundColor: FlutterFlowTheme.of(context).primary,
       ),
       drawer: Drawer(
         elevation: 16,
@@ -99,7 +115,7 @@ class _MainPageWidgetState extends State<MainPageWidget> {
                               size: 24,
                             ),
                             onPressed: () {
-                              print('IconButton pressed ...');
+                              print("ICON PRESSED");
                             },
                           ),
                           Align(
@@ -305,20 +321,31 @@ class _MainPageWidgetState extends State<MainPageWidget> {
             ),
             // The body widget will be displayed under the SlidingSheet
             // and a parallax effect can be applied to it.
-            body: GoogleMap(
-              mapType: MapType.normal,
-              myLocationButtonEnabled: true,
-              myLocationEnabled: true,
-              zoomGesturesEnabled: true,
-              zoomControlsEnabled: true,
-              initialCameraPosition: _kGooglePlex,
-              padding: EdgeInsets.only(
-                  bottom: MediaQuery.sizeOf(context).height * 0.3),
-              onMapCreated: (GoogleMapController controller) => {
-                _controller.complete(controller),
-                googleMapController = controller,
-                locatePosition()
-              },
+            body: Stack(
+              children: [
+                GoogleMap(
+                  mapType: MapType.normal,
+                  myLocationButtonEnabled: true,
+                  myLocationEnabled: true,
+                  zoomGesturesEnabled: true,
+                  zoomControlsEnabled: true,
+                  initialCameraPosition: _kGooglePlex,
+                  padding: EdgeInsets.only(
+                      bottom: MediaQuery.sizeOf(context).height * 0.3),
+                  onMapCreated: (GoogleMapController controller) => {
+                    _controller.complete(controller),
+                    googleMapController = controller,
+                    locatePosition()
+                  },
+                ),
+                AnimatedOpacity(
+                  opacity: getSearchDestShown ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 500),
+                  child: SearchDestinationWidget(
+                    visible: getSearchDestShown,
+                  ),
+                )
+              ],
             ),
             builder: (context, state) {
               // This is the content of the sheet that will get
@@ -375,46 +402,55 @@ class _MainPageWidgetState extends State<MainPageWidget> {
                               ),
                             ),
                           ),
-                          Padding(
-                            padding:
-                                EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
-                            child: Container(
-                              width: MediaQuery.sizeOf(context).width * 0.8,
-                              height: MediaQuery.sizeOf(context).height * 0.05,
-                              decoration: BoxDecoration(
-                                color: FlutterFlowTheme.of(context)
-                                    .secondaryBackground,
-                                boxShadow: [
-                                  BoxShadow(
-                                    blurRadius: 4,
-                                    color: Color(0x33000000),
-                                    offset: Offset(0, 2),
-                                  )
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.max,
-                                children: [
-                                  Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        20, 0, 0, 0),
-                                    child: Icon(
-                                      Icons.travel_explore,
-                                      color:
-                                          FlutterFlowTheme.of(context).success,
-                                      size: 24,
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                searchDestShown = !searchDestShown;
+                              });
+                              print(searchDestShown);
+                            },
+                            child: Padding(
+                              padding:
+                                  EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+                              child: Container(
+                                width: MediaQuery.sizeOf(context).width * 0.8,
+                                height:
+                                    MediaQuery.sizeOf(context).height * 0.05,
+                                decoration: BoxDecoration(
+                                  color: FlutterFlowTheme.of(context)
+                                      .secondaryBackground,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      blurRadius: 4,
+                                      color: Color(0x33000000),
+                                      offset: Offset(0, 2),
+                                    )
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.max,
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                          20, 0, 0, 0),
+                                      child: Icon(
+                                        Icons.travel_explore,
+                                        color: FlutterFlowTheme.of(context)
+                                            .success,
+                                        size: 24,
+                                      ),
                                     ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        20, 0, 0, 0),
-                                    child: Text(
-                                      'Пребарај локација',
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium,
+                                    Padding(
+                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                          20, 0, 0, 0),
+                                      child: Text(
+                                        'Пребарај локација',
+                                        style: FlutterFlowTheme.of(context)
+                                            .bodyMedium,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ),
@@ -454,7 +490,13 @@ class _MainPageWidgetState extends State<MainPageWidget> {
                                         Align(
                                           alignment: AlignmentDirectional(0, 0),
                                           child: Text(
-                                            'Додади ја локацијата на твојот дом',
+                                            Provider.of<AppData>(context)
+                                                        .pickUpLocation !=
+                                                    null
+                                                ? Provider.of<AppData>(context)
+                                                    .pickUpLocation!
+                                                    .placeFormattedAddress
+                                                : 'Додади ја локацијата на твојот дом',
                                             style: FlutterFlowTheme.of(context)
                                                 .bodyMedium,
                                           ),

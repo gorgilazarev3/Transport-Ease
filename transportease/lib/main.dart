@@ -4,8 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_config/flutter_config.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:provider/provider.dart';
+import 'package:transportease/DataHandler/app_data.dart';
 import 'package:transportease/Screens/login_page.dart';
 
+import 'Models/address.dart';
 import 'Screens/landing_page.dart';
 import 'flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/internationalization.dart';
@@ -39,6 +42,8 @@ class _MyAppState extends State<TransportEaseApp> {
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
 
+  Address? pickUpLocation;
+
   @override
   void initState() {
     super.initState();
@@ -50,6 +55,10 @@ class _MyAppState extends State<TransportEaseApp> {
     setState(() => _locale = createLocale(language));
   }
 
+  void updatePickupLocationAddress(Address location) {
+    setState(() => pickUpLocation = location);
+  }
+
   void setThemeMode(ThemeMode mode) => setState(() {
         _themeMode = mode;
         FlutterFlowTheme.saveThemeMode(mode);
@@ -57,26 +66,29 @@ class _MyAppState extends State<TransportEaseApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'TransportEase',
-      localizationsDelegates: [
-        FFLocalizationsDelegate(),
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      locale: _locale,
-      supportedLocales: const [Locale('en', '')],
-      theme: ThemeData(
-        brightness: Brightness.light,
-        scrollbarTheme: ScrollbarThemeData(),
+    return ChangeNotifierProvider(
+      create: (context) => AppData(),
+      child: MaterialApp.router(
+        title: 'TransportEase',
+        localizationsDelegates: [
+          FFLocalizationsDelegate(),
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        locale: _locale,
+        supportedLocales: const [Locale('en', '')],
+        theme: ThemeData(
+          brightness: Brightness.light,
+          scrollbarTheme: ScrollbarThemeData(),
+        ),
+        darkTheme: ThemeData(
+          brightness: Brightness.dark,
+          scrollbarTheme: ScrollbarThemeData(),
+        ),
+        themeMode: _themeMode,
+        routerConfig: _router,
       ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        scrollbarTheme: ScrollbarThemeData(),
-      ),
-      themeMode: _themeMode,
-      routerConfig: _router,
     );
   }
 }
@@ -98,6 +110,7 @@ class TransportEaseApp extends StatefulWidget {
       title: "TransportEase",
       home: const LandingPage(),
       theme: ThemeData(fontFamily: "Nunito"),
+      debugShowCheckedModeBanner: false,
     );
   }
 }

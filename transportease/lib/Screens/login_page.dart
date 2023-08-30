@@ -151,7 +151,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                                                 FlutterFlowTheme.of(context)
                                                     .titleMediumFamily,
                                             color: FlutterFlowTheme.of(context)
-                                                .alternate,
+                                                .secondaryText,
                                             useGoogleFonts: GoogleFonts.asMap()
                                                 .containsKey(
                                                     FlutterFlowTheme.of(context)
@@ -201,7 +201,18 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                                               24.0, 24.0, 0.0, 24.0),
                                     ),
                                     style: FlutterFlowTheme.of(context)
-                                        .titleMedium,
+                                        .titleMedium
+                                        .override(
+                                          fontFamily:
+                                              FlutterFlowTheme.of(context)
+                                                  .titleMediumFamily,
+                                          color: FlutterFlowTheme.of(context)
+                                              .secondaryText,
+                                          useGoogleFonts: GoogleFonts.asMap()
+                                              .containsKey(
+                                                  FlutterFlowTheme.of(context)
+                                                      .titleMediumFamily),
+                                        ),
                                     keyboardType: TextInputType.emailAddress,
                                     validator: _model
                                         .emailAddressControllerValidator
@@ -228,7 +239,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                                                 FlutterFlowTheme.of(context)
                                                     .titleMediumFamily,
                                             color: FlutterFlowTheme.of(context)
-                                                .alternate,
+                                                .secondaryText,
                                             useGoogleFonts: GoogleFonts.asMap()
                                                 .containsKey(
                                                     FlutterFlowTheme.of(context)
@@ -294,7 +305,18 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                                       ),
                                     ),
                                     style: FlutterFlowTheme.of(context)
-                                        .titleMedium,
+                                        .titleMedium
+                                        .override(
+                                          fontFamily:
+                                              FlutterFlowTheme.of(context)
+                                                  .titleMediumFamily,
+                                          color: FlutterFlowTheme.of(context)
+                                              .secondaryText,
+                                          useGoogleFonts: GoogleFonts.asMap()
+                                              .containsKey(
+                                                  FlutterFlowTheme.of(context)
+                                                      .titleMediumFamily),
+                                        ),
                                     validator: _model
                                         .passwordControllerValidator
                                         .asValidator(context),

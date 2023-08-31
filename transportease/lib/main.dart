@@ -7,6 +7,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:transportease/DataHandler/app_data.dart';
 import 'package:transportease/Screens/login_page.dart';
+import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
+import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 
 import 'Models/address.dart';
 import 'Screens/landing_page.dart';
@@ -14,8 +16,19 @@ import 'flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/internationalization.dart';
 import 'flutter_flow/nav/nav.dart';
 
+AndroidMapRenderer mapRenderer = AndroidMapRenderer.latest;
+
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final GoogleMapsFlutterPlatform mapsImplementation =
+      GoogleMapsFlutterPlatform.instance;
+  if (mapsImplementation is GoogleMapsFlutterAndroid) {
+    WidgetsFlutterBinding.ensureInitialized();
+    mapRenderer = await mapsImplementation
+        .initializeWithRenderer(AndroidMapRenderer.latest);
+  } else {
+    WidgetsFlutterBinding.ensureInitialized();
+  }
+
   if (kIsWeb) {
     await Firebase.initializeApp(
         options: const FirebaseOptions(

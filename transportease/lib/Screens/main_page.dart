@@ -40,9 +40,28 @@ class _MainPageWidgetState extends State<MainPageWidget> {
 
   bool searchDestShown = false;
 
+  bool showDirections = false;
+
   bool get getSearchDestShown => searchDestShown;
 
+  Future<void> updateSearchDestShown() async {
+    setState(() {
+      searchDestShown = false;
+    });
+    await getPlaceDirection();
+  }
+
   void locatePosition() async {
+    LocationPermission permission;
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.deniedForever) {
+        return Future.error('Location Not Available');
+      }
+    } else {
+      throw Exception('Error');
+    }
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
         forceAndroidLocationManager: true);
@@ -58,7 +77,6 @@ class _MainPageWidgetState extends State<MainPageWidget> {
 
     Address address = await MethodsAssistants.getAddressFromCoordinates(
         currentPosition, context);
-    print("This is your address: " + address.toString());
   }
 
   @override
@@ -343,6 +361,7 @@ class _MainPageWidgetState extends State<MainPageWidget> {
                   duration: const Duration(milliseconds: 500),
                   child: SearchDestinationWidget(
                     visible: getSearchDestShown,
+                    updateParent: updateSearchDestShown,
                   ),
                 )
               ],
@@ -407,7 +426,6 @@ class _MainPageWidgetState extends State<MainPageWidget> {
                               setState(() {
                                 searchDestShown = !searchDestShown;
                               });
-                              print(searchDestShown);
                             },
                             child: Padding(
                               padding:
@@ -553,5 +571,28 @@ class _MainPageWidgetState extends State<MainPageWidget> {
             })
       ]),
     );
+  }
+
+  Future<void> getPlaceDirection() async {
+    var initialPos =
+        Provider.of<AppData>(context, listen: false).pickUpLocation;
+    var destPos = Provider.of<AppData>(context, listen: false).dropOffLocation;
+
+    var pickupLatLng = LatLng(initialPos!.latitude, initialPos.longitude);
+    var destLatLng = LatLng(destPos!.latitude, destPos.longitude);
+
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              content: Text("Се вчитува рутата, Ве молиме почекајте"),
+            ));
+
+    var details = await MethodsAssistants.obtainDirectionDetails(
+        pickupLatLng, destLatLng);
+
+    Navigator.pop(context);
+
+    print("ENCODED POINTS:");
+    print(details.encodedPoints);
   }
 }

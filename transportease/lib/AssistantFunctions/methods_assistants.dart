@@ -1,5 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -7,8 +11,11 @@ import 'package:provider/provider.dart';
 import 'package:transportease/AssistantFunctions/http_assistant.dart';
 import 'package:transportease/DataHandler/app_data.dart';
 import 'package:transportease/Models/address.dart';
+import 'package:transportease/Models/app_user.dart';
 import 'package:transportease/Models/direction_details.dart';
 import 'package:transportease/config_maps.dart' as ConfigMap;
+
+import '../config_maps.dart';
 
 class MethodsAssistants {
   static Future<Address> getAddressFromCoordinates(
@@ -67,9 +74,6 @@ class MethodsAssistants {
         Provider.of<AppData>(context, listen: false)
             .updateDropOffLocationAddress(address);
 
-        print("DROP OFF LOC:");
-        print(address);
-
         return address;
       } else {
         throw Exception('Failed to load address');
@@ -104,5 +108,32 @@ class MethodsAssistants {
       // then throw an exception.
       throw Exception('Failed to load directions');
     }
+  }
+
+  static int calculateFare(DirectionDetails directionDetails) {
+    //in USD
+    double timeTravelled = (directionDetails.durationValue / 60) * 0.20;
+    double distanceTravelled = (directionDetails.distanceValue / 1000) * 0.20;
+    double fareUsd = timeTravelled + distanceTravelled;
+
+    //in MKD, at time of writing this function 1$ USD = 57 MKD
+    double fareMkd = fareUsd * 57;
+    return fareMkd.round();
+  }
+
+  static void getLoggedInUser(BuildContext context) async {
+    var firebaseUser = FirebaseAuth.instance.currentUser;
+    String userId = firebaseUser!.uid;
+    Provider.of<AppData>(context).updateFirebaseUser(firebaseUser);
+
+    DatabaseReference databaseReference =
+        FirebaseDatabase.instance.ref().child("users").child(userId);
+
+    databaseReference.once().then((DataSnapshot snapshot) {
+          if (snapshot.value != null) {
+            AppUser user = AppUser.fromSnapshot(snapshot);
+            Provider.of<AppData>(context).updateAppUser(user);
+          }
+        } as FutureOr Function(DatabaseEvent value));
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
@@ -9,6 +11,7 @@ import 'package:transportease/DataHandler/app_data.dart';
 import 'package:transportease/Screens/login_page.dart';
 import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
+import 'package:transportease/flutter_flow/flutter_flow_util.dart';
 
 import 'Models/address.dart';
 import 'Screens/landing_page.dart';
@@ -16,18 +19,16 @@ import 'flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/internationalization.dart';
 import 'flutter_flow/nav/nav.dart';
 
-AndroidMapRenderer mapRenderer = AndroidMapRenderer.latest;
-
 Future<void> main() async {
-  final GoogleMapsFlutterPlatform mapsImplementation =
-      GoogleMapsFlutterPlatform.instance;
-  if (mapsImplementation is GoogleMapsFlutterAndroid) {
-    WidgetsFlutterBinding.ensureInitialized();
-    mapRenderer = await mapsImplementation
-        .initializeWithRenderer(AndroidMapRenderer.latest);
-  } else {
-    WidgetsFlutterBinding.ensureInitialized();
+  if (isAndroid) {
+    final GoogleMapsFlutterPlatform platform =
+        GoogleMapsFlutterPlatform.instance;
+    // Default to Hybrid Composition for the example.
+    (platform as GoogleMapsFlutterAndroid).useAndroidViewSurface = true;
+    initializeMapRenderer();
   }
+
+  WidgetsFlutterBinding.ensureInitialized();
 
   if (kIsWeb) {
     await Firebase.initializeApp(
@@ -46,6 +47,32 @@ Future<void> main() async {
   }
 
   runApp(const TransportEaseApp());
+}
+
+Completer<AndroidMapRenderer?>? _initializedRendererCompleter;
+
+/// Initializes map renderer to the `latest` renderer type.
+///
+/// The renderer must be requested before creating GoogleMap instances,
+/// as the renderer can be initialized only once per application context.
+Future<AndroidMapRenderer?> initializeMapRenderer() async {
+  if (_initializedRendererCompleter != null) {
+    return _initializedRendererCompleter!.future;
+  }
+
+  final Completer<AndroidMapRenderer?> completer =
+      Completer<AndroidMapRenderer?>();
+  _initializedRendererCompleter = completer;
+
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final GoogleMapsFlutterPlatform platform = GoogleMapsFlutterPlatform.instance;
+  unawaited((platform as GoogleMapsFlutterAndroid)
+      .initializeWithRenderer(AndroidMapRenderer.latest)
+      .then((AndroidMapRenderer initializedRenderer) =>
+          completer.complete(initializedRenderer)));
+
+  return completer.future;
 }
 
 class _MyAppState extends State<TransportEaseApp> {

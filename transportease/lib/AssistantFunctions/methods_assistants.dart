@@ -124,16 +124,23 @@ class MethodsAssistants {
   static void getLoggedInUser(BuildContext context) async {
     var firebaseUser = FirebaseAuth.instance.currentUser;
     String userId = firebaseUser!.uid;
-    Provider.of<AppData>(context).updateFirebaseUser(firebaseUser);
+    Provider.of<AppData>(context, listen: false)
+        .updateFirebaseUser(firebaseUser);
 
     DatabaseReference databaseReference =
         FirebaseDatabase.instance.ref().child("users").child(userId);
 
-    databaseReference.once().then((DataSnapshot snapshot) {
-          if (snapshot.value != null) {
-            AppUser user = AppUser.fromSnapshot(snapshot);
-            Provider.of<AppData>(context).updateAppUser(user);
-          }
-        } as FutureOr Function(DatabaseEvent value));
+    // databaseReference.once().then((DataSnapshot snapshot) {
+    //       if (snapshot.value != null) {
+    //         AppUser user = AppUser.fromSnapshot(snapshot);
+    //         Provider.of<AppData>(context).updateAppUser(user);
+    //       }
+    //     } as FutureOr Function(DatabaseEvent value));
+
+    DataSnapshot snapshot = await databaseReference.get();
+    if (snapshot.exists) {
+      AppUser user = AppUser.fromSnapshot(snapshot);
+      Provider.of<AppData>(context, listen: false).updateAppUser(user);
+    }
   }
 }

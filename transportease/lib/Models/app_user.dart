@@ -6,14 +6,14 @@ class AppUser {
   String email;
   String name;
   String phone;
-  String type;
+  String role;
 
   AppUser(
       {required this.id,
       required this.email,
       required this.name,
       required this.phone,
-      required this.type});
+      required this.role});
 
   factory AppUser.fromSnapshot(DataSnapshot dataSnapshot) {
     if (dataSnapshot != null) {
@@ -24,7 +24,7 @@ class AppUser {
             email: data["email"],
             name: data["name"],
             phone: data["phone"],
-            type: data["type"]);
+            role: data["role"]);
       }
     }
     throw Exception("AppUser not found");

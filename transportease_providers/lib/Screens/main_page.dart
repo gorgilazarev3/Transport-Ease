@@ -12,13 +12,13 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_flutter_platform_interface/src/types/location.dart'
     as MapsLocation;
 import 'package:provider/provider.dart';
-import 'package:transportease/AssistantFunctions/methods_assistants.dart';
-import 'package:transportease/Models/address.dart';
-import 'package:transportease/Screens/requesting_ride_widget.dart';
-import 'package:transportease/Screens/ride_choice_widget.dart';
-import 'package:transportease/Screens/search_destination_component.dart';
-import 'package:transportease/config_maps.dart' as ConfigMap;
-import 'package:transportease/flutter_flow/flutter_flow_util.dart';
+import 'package:transportease_providers/AssistantFunctions/methods_assistants.dart';
+import 'package:transportease_providers/Models/address.dart';
+import 'package:transportease_providers/Screens/requesting_ride_widget.dart';
+import 'package:transportease_providers/Screens/ride_choice_widget.dart';
+import 'package:transportease_providers/Screens/search_destination_component.dart';
+import 'package:transportease_providers/config_maps.dart' as ConfigMap;
+import 'package:transportease_providers/flutter_flow/flutter_flow_util.dart';
 import 'package:wtf_sliding_sheet/wtf_sliding_sheet.dart';
 
 import '../DataHandler/app_data.dart';
@@ -180,7 +180,7 @@ class _MainPageWidgetState extends State<MainPageWidget>
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text("TransportEase"),
+        title: Text("transportease_providers"),
         backgroundColor: FlutterFlowTheme.of(context).primary,
       ),
       drawer: Drawer(

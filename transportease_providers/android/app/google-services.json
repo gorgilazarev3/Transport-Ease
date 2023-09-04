@@ -1,0 +1,91 @@
+{
+  "project_info": {
+    "project_number": "376309427810",
+    "firebase_url": "https://transportease-da2b7-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "transportease-da2b7",
+    "storage_bucket": "transportease-da2b7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:376309427810:android:8b3a2dc03d27e582f02b3b",
+        "android_client_info": {
+          "package_name": "mk.ukim.finki.nvd.transportease"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "376309427810-ps6ma9rkl82dgi3to93rnlh6g4csk5m7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "mk.ukim.finki.nvd.transportease",
+            "certificate_hash": "9bbb3186b2189ef16d8f272bdab59362c395cbb4"
+          }
+        },
+        {
+          "client_id": "376309427810-8bjas1fqpi2rmc87v3fhg6p852tpitap.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIgdvOBBFrQx7thJnjmCcbufvHA3ttqCE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "376309427810-8bjas1fqpi2rmc87v3fhg6p852tpitap.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "376309427810-34q7eskgiqqor1g5in4vmrk7qh7n1445.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.transportease"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:376309427810:android:7347f0e1cd7d5f0bf02b3b",
+        "android_client_info": {
+          "package_name": "mk.ukim.finki.nvd.transportease_providers"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "376309427810-8bjas1fqpi2rmc87v3fhg6p852tpitap.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIgdvOBBFrQx7thJnjmCcbufvHA3ttqCE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "376309427810-8bjas1fqpi2rmc87v3fhg6p852tpitap.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "376309427810-34q7eskgiqqor1g5in4vmrk7qh7n1445.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.transportease"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

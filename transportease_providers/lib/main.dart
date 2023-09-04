@@ -8,12 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_config/flutter_config.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:transportease/DataHandler/app_data.dart';
-import 'package:transportease/Screens/login_page.dart';
+import 'package:transportease_providers/DataHandler/app_data.dart';
+import 'package:transportease_providers/Screens/login_page.dart';
 import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
-import 'package:transportease/Screens/main_page.dart';
-import 'package:transportease/flutter_flow/flutter_flow_util.dart';
+import 'package:transportease_providers/Screens/main_page.dart';
+import 'package:transportease_providers/flutter_flow/flutter_flow_util.dart';
 
 import 'Models/address.dart';
 import 'Screens/landing_page.dart';
@@ -36,7 +36,7 @@ Future<void> main() async {
     await Firebase.initializeApp(
         options: const FirebaseOptions(
             apiKey: "AIzaSyDJDtIjXxPSPDfRwnKSO2gGvS3s7gdLAfs",
-            appId: "1:376309427810:web:48af3118670cb068f02b3b",
+            appId: "1:376309427810:web:8adf40eea0681723f02b3b",
             messagingSenderId: "376309427810",
             projectId: "transportease-da2b7",
             databaseURL:
@@ -111,7 +111,7 @@ class _MyAppState extends State<TransportEaseApp> {
     return ChangeNotifierProvider(
       create: (context) => AppData(),
       child: MaterialApp.router(
-        title: 'TransportEase',
+        title: 'TransportEase - Превозници',
         localizationsDelegates: [
           FFLocalizationsDelegate(),
           GlobalMaterialLocalizations.delegate,
@@ -136,6 +136,8 @@ class _MyAppState extends State<TransportEaseApp> {
 }
 
 DatabaseReference usersRef = FirebaseDatabase.instance.ref().child("users");
+DatabaseReference providersRef =
+    FirebaseDatabase.instance.ref().child("providers");
 
 class TransportEaseApp extends StatefulWidget {
   const TransportEaseApp({super.key});

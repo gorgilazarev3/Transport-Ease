@@ -2058,8 +2058,17 @@ class _RegistrationPageWidgetState extends State<RegistrationPageWidget>
                 password: _model.passwordController2.text));
 
         if (firebaseUser != null) {
-          Fluttertoast.showToast(msg: "Успешно се најавивте!");
-          context.go("/home");
+          DataSnapshot userSnap =
+              await UserScrollNotification.child(firebaseUser.user!.uid).get();
+          if (userSnap.value == null) {
+            Fluttertoast.showToast(
+                msg:
+                    "Не постои корисник со такви информации. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
+            _firebaseAuth.signOut();
+          } else {
+            Fluttertoast.showToast(msg: "Успешно се најавивте!");
+            context.go("/home");
+          }
         }
       } on FirebaseAuthException catch (e) {
         if (e.code == 'user-not-found') {

@@ -3,10 +3,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:transportease_providers/Screens/independent_provider_info.dart';
 import 'package:transportease_providers/Screens/landing_page.dart';
 import 'package:transportease_providers/Screens/login_page.dart';
 import 'package:transportease_providers/Screens/main_page.dart';
+import 'package:transportease_providers/Screens/providers_main_page.dart';
 import 'package:transportease_providers/Screens/registration_page.dart';
+import 'package:transportease_providers/Screens/taxi_provider_info.dart';
+import 'package:transportease_providers/Screens/transporting_provider_info.dart';
 
 import '/index.dart';
 import '/main.dart';
@@ -60,7 +64,22 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: 'Регистрирајте се',
           path: '/register',
           builder: (context, params) => RegistrationPageWidget(),
-        )
+        ),
+        FFRoute(
+          name: 'Информации за самостоен превозник',
+          path: '/independentProvider',
+          builder: (context, params) => IndependentProviderInformationWidget(),
+        ),
+        FFRoute(
+          name: 'Информации за такси превозник',
+          path: '/taxiProvider',
+          builder: (context, params) => TaxiProviderInformationWidget(),
+        ),
+        FFRoute(
+          name: 'Информации за превозник',
+          path: '/transportingProvider',
+          builder: (context, params) => TransportProviderInformationWidget(),
+        ),
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );
 

@@ -138,6 +138,11 @@ class _MyAppState extends State<TransportEaseApp> {
 DatabaseReference usersRef = FirebaseDatabase.instance.ref().child("users");
 DatabaseReference providersRef =
     FirebaseDatabase.instance.ref().child("providers");
+DatabaseReference rideRequestsRef = FirebaseDatabase.instance
+    .ref()
+    .child("providers")
+    .child(FirebaseAuth.instance.currentUser!.uid)
+    .child("newRide");
 
 class TransportEaseApp extends StatefulWidget {
   const TransportEaseApp({super.key});

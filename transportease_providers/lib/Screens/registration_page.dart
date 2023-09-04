@@ -974,52 +974,56 @@ class _RegistrationPageWidgetState extends State<RegistrationPageWidget>
                                                               .bodyMedium,
                                                     ),
                                                   ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(
-                                                                0, 10, 0, 10),
-                                                    child:
-                                                        FlutterFlowRadioButton(
-                                                      options: [
-                                                        'Самостојно',
-                                                        'Такси',
-                                                        'Превозник'
-                                                      ].toList(),
-                                                      onChanged: (val) =>
-                                                          setState(() {}),
-                                                      controller: _model
-                                                              .radioButtonValueController ??=
-                                                          FormFieldController<
-                                                              String>(null),
-                                                      optionHeight: 32,
-                                                      textStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .labelMedium,
-                                                      selectedTextStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium,
-                                                      buttonPosition:
-                                                          RadioButtonPosition
-                                                              .left,
-                                                      direction:
-                                                          Axis.horizontal,
-                                                      radioButtonColor:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .primary,
-                                                      inactiveRadioButtonColor:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .secondaryText,
-                                                      toggleable: false,
-                                                      horizontalAlignment:
-                                                          WrapAlignment.center,
-                                                      verticalAlignment:
-                                                          WrapCrossAlignment
-                                                              .start,
+                                                  Align(
+                                                    alignment: Alignment.center,
+                                                    child: Padding(
+                                                      padding:
+                                                          EdgeInsetsDirectional
+                                                              .fromSTEB(
+                                                                  0, 10, 0, 10),
+                                                      child:
+                                                          FlutterFlowRadioButton(
+                                                        options: [
+                                                          'Самостојно',
+                                                          'Такси',
+                                                          'Превозник'
+                                                        ].toList(),
+                                                        onChanged: (val) =>
+                                                            setState(() {}),
+                                                        controller: _model
+                                                                .radioButtonValueController ??=
+                                                            FormFieldController<
+                                                                String>(null),
+                                                        optionHeight: 32,
+                                                        textStyle:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .labelMedium,
+                                                        selectedTextStyle:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .bodyMedium,
+                                                        buttonPosition:
+                                                            RadioButtonPosition
+                                                                .left,
+                                                        direction:
+                                                            Axis.horizontal,
+                                                        radioButtonColor:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .primary,
+                                                        inactiveRadioButtonColor:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .secondaryText,
+                                                        toggleable: false,
+                                                        horizontalAlignment:
+                                                            WrapAlignment
+                                                                .center,
+                                                        verticalAlignment:
+                                                            WrapCrossAlignment
+                                                                .start,
+                                                      ),
                                                     ),
                                                   ),
                                                   Align(
@@ -1074,8 +1078,7 @@ class _RegistrationPageWidgetState extends State<RegistrationPageWidget>
                                                           registerNewUser(
                                                               context);
                                                         },
-                                                        text:
-                                                            'Регистрирајте се',
+                                                        text: 'Следно',
                                                         options:
                                                             FFButtonOptions(
                                                           width: 230,
@@ -2075,8 +2078,16 @@ class _RegistrationPageWidgetState extends State<RegistrationPageWidget>
         };
 
         providersRef.child(firebaseUser.uid).set(userDataObj);
-        Fluttertoast.showToast(msg: "Вашиот акаунт е успешно креиран!");
-        context.go("/login");
+        Fluttertoast.showToast(
+            msg:
+                "Вашиот профил е креиран, ќе бидете пренасочени кон страницата за информации за превозник");
+        if (user_role == "regular_driver") {
+          context.go("/independentProvider");
+        } else if (user_role == "taxi_driver") {
+          context.go("/taxiProvider");
+        } else if (user_role == "transporting_driver") {
+          context.go("/transportingProvider");
+        }
       }
     }
   }
@@ -2131,8 +2142,17 @@ class _RegistrationPageWidgetState extends State<RegistrationPageWidget>
                 password: _model.passwordController2.text));
 
         if (firebaseUser != null) {
-          Fluttertoast.showToast(msg: "Успешно се најавивте!");
-          context.go("/home");
+          DataSnapshot userSnap =
+              await providersRef.child(firebaseUser.user!.uid).get();
+          if (userSnap.value == null) {
+            Fluttertoast.showToast(
+                msg:
+                    "Не постои корисник со такви информации. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
+            _firebaseAuth.signOut();
+          } else {
+            Fluttertoast.showToast(msg: "Успешно се најавивте!");
+            context.go("/home");
+          }
         }
       } on FirebaseAuthException catch (e) {
         if (e.code == 'user-not-found') {

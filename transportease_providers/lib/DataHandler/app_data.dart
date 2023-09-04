@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:transportease_providers/Models/address.dart';
 
 import '../Models/app_user.dart';
@@ -10,6 +13,7 @@ class AppData extends ChangeNotifier {
   DirectionDetails? tripDetails;
   User? loggedInUser;
   AppUser? loggedInUserProfile;
+  StreamSubscription<Position>? mainPageStreamSub;
 
   void updatePickupLocationAddress(Address location) {
     pickUpLocation = location;
@@ -33,6 +37,11 @@ class AppData extends ChangeNotifier {
 
   void updateAppUser(AppUser appUser) {
     loggedInUserProfile = appUser;
+    notifyListeners();
+  }
+
+  void updateMainPageSub(StreamSubscription<Position> sub) {
+    mainPageStreamSub = sub;
     notifyListeners();
   }
 }

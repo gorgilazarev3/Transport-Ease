@@ -128,7 +128,7 @@ class MethodsAssistants {
         .updateFirebaseUser(firebaseUser);
 
     DatabaseReference databaseReference =
-        FirebaseDatabase.instance.ref().child("users").child(userId);
+        FirebaseDatabase.instance.ref().child("providers").child(userId);
 
     // databaseReference.once().then((DataSnapshot snapshot) {
     //       if (snapshot.value != null) {

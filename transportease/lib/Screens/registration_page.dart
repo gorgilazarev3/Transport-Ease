@@ -2059,7 +2059,7 @@ class _RegistrationPageWidgetState extends State<RegistrationPageWidget>
 
         if (firebaseUser != null) {
           DataSnapshot userSnap =
-              await UserScrollNotification.child(firebaseUser.user!.uid).get();
+              await usersRef.child(firebaseUser.user!.uid).get();
           if (userSnap.value == null) {
             Fluttertoast.showToast(
                 msg:

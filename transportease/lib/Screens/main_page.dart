@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -21,8 +23,10 @@ import 'package:transportease/config_maps.dart' as ConfigMap;
 import 'package:transportease/flutter_flow/flutter_flow_util.dart';
 import 'package:wtf_sliding_sheet/wtf_sliding_sheet.dart';
 
+import '../AssistantFunctions/geofire_assistant.dart';
 import '../DataHandler/app_data.dart';
 import '../Models/direction_details.dart';
+import '../Models/nearby_driver.dart';
 import '../flutter_flow/flutter_flow_icon_button.dart';
 import '../flutter_flow/flutter_flow_theme.dart';
 
@@ -54,6 +58,8 @@ class _MainPageWidgetState extends State<MainPageWidget>
   bool showRideChoice = false;
 
   bool requestedRide = false;
+
+  bool nearbyDriversLoaded = false;
 
   bool get getSearchDestShown => searchDestShown;
 
@@ -162,6 +168,7 @@ class _MainPageWidgetState extends State<MainPageWidget>
 
     Address address = await MethodsAssistants.getAddressFromCoordinates(
         currentPosition, context);
+    initGeoFireListener();
   }
 
   void resetTrip() {
@@ -857,6 +864,81 @@ class _MainPageWidgetState extends State<MainPageWidget>
         circlesSet.add(pickupCircle);
         circlesSet.add(destCircle);
       });
+    });
+  }
+
+  void initGeoFireListener() {
+    Geofire.initialize("availableProviders");
+    //
+    Geofire.queryAtLocation(
+            currentPosition.latitude, currentPosition.longitude, 5)!
+        .listen((map) {
+      if (map != null) {
+        var callBack = map['callBack'];
+
+        //latitude will be retrieved from map['latitude']
+        //longitude will be retrieved from map['longitude']
+
+        switch (callBack) {
+          case Geofire.onKeyEntered:
+            NearbyAvailableDriver nearbyAvailableDriver = NearbyAvailableDriver(
+                key: map['key'],
+                latitude: map['latitude'],
+                longitude: map['longitude']);
+            GeofireAssistant.nearbyAvailableDrivers.add(nearbyAvailableDriver);
+            if (nearbyDriversLoaded) {
+              updateAvailableDriversOnMap();
+            }
+            break;
+
+          case Geofire.onKeyExited:
+            GeofireAssistant.removeDriverFromList(map['key']);
+            updateAvailableDriversOnMap();
+            break;
+
+          case Geofire.onKeyMoved:
+            // Update your key's location
+            NearbyAvailableDriver nearbyAvailableDriver = NearbyAvailableDriver(
+                key: map['key'],
+                latitude: map['latitude'],
+                longitude: map['longitude']);
+            GeofireAssistant.updateSpecificDriverNearbyLocation(
+                nearbyAvailableDriver);
+            updateAvailableDriversOnMap();
+            break;
+
+          case Geofire.onGeoQueryReady:
+            // All Intial Data is loaded
+            updateAvailableDriversOnMap();
+            break;
+        }
+      }
+
+      setState(() {});
+    });
+    //
+  }
+
+  void updateAvailableDriversOnMap() {
+    setState(() {
+      markersSet.clear();
+    });
+
+    Set<Marker> nearbyDriversMarkers = Set<Marker>();
+    for (NearbyAvailableDriver driver
+        in GeofireAssistant.nearbyAvailableDrivers) {
+      MapsLocation.LatLng driverAvailablePos =
+          MapsLocation.LatLng(driver.latitude, driver.longitude);
+      Marker marker = Marker(
+          markerId: MarkerId("driver${driver.key}"),
+          position: driverAvailablePos,
+          icon:
+              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+          rotation: MethodsAssistants.randomNumber(360));
+      nearbyDriversMarkers.add(marker);
+    }
+    setState(() {
+      markersSet = nearbyDriversMarkers;
     });
   }
 }

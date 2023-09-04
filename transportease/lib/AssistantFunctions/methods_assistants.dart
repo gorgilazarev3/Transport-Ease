@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -142,5 +143,12 @@ class MethodsAssistants {
       AppUser user = AppUser.fromSnapshot(snapshot);
       Provider.of<AppData>(context, listen: false).updateAppUser(user);
     }
+  }
+
+  static double randomNumber(int num) {
+    var random = Random();
+
+    int randomNum = random.nextInt(num);
+    return randomNum.toDouble();
   }
 }

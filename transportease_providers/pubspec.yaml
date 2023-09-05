@@ -65,6 +65,8 @@ dependencies:
   flutter_config: ^2.0.2
   flutter_polyline_points: ^2.0.0
   flutter_geofire: ^2.0.3
+  firebase_messaging: ^14.6.7
+  assets_audio_player: ^3.1.1
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -104,6 +106,12 @@ flutter:
   assets:
      - assets/images/taxi_render.png
      - assets/images/regular_car_render.png
+     - assets/images/taxi_icon.png
+     - assets/images/regular_car_icon.png
+     - assets/images/international_provider_icon.png
+     - assets/images/local_provider_icon.png
+     - assets/images/carrier_provider_icon.png
+     - assets/audios/notification.mp3
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

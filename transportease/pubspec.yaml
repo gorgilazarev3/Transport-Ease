@@ -104,6 +104,11 @@ flutter:
   assets:
      - assets/images/taxi_render.png
      - assets/images/regular_car_render.png
+     - assets/images/taxi_icon.png
+     - assets/images/regular_car_icon.png
+     - assets/images/international_provider_icon.png
+     - assets/images/local_provider_icon.png
+     - assets/images/carrier_provider_icon.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

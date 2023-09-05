@@ -9,6 +9,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as MapsLocation;
 import 'package:transportease_providers/DataHandler/app_data.dart';
+import 'package:transportease_providers/Notifications/push_notification_service.dart';
 import 'package:transportease_providers/Screens/providers_account_page.dart';
 import 'package:transportease_providers/Screens/providers_earnings_page.dart';
 import 'package:transportease_providers/Screens/providers_ratings_page.dart';
@@ -78,12 +79,23 @@ class _ProviderMainPageWidgetState extends State<ProviderMainPageWidget> {
     //     currentPosition, context);
   }
 
+  void getCurrentProviderInfo() {
+    Provider.of<AppData>(context, listen: false).updateFirebaseUser(
+        FirebaseAuth.instance.currentUser ??
+            Provider.of<AppData>(context, listen: false).loggedInUser!);
+
+    PushNotificationService pushNotificationService = PushNotificationService();
+    pushNotificationService.initialize(context);
+    pushNotificationService.getToken(context);
+  }
+
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => ProviderMainPageModel());
 
     WidgetsBinding.instance.addPostFrameCallback((_) => setState(() {}));
+    getCurrentProviderInfo();
   }
 
   @override
@@ -145,7 +157,8 @@ class _ProviderMainPageWidgetState extends State<ProviderMainPageWidget> {
                       : 'Статус: Недостапен - ПРОМЕНИ',
                   options: FFButtonOptions(
                     width: isProviderAvailable
-                      ? MediaQuery.sizeOf(context).width * 0.6 : MediaQuery.sizeOf(context).width * 0.7,
+                        ? MediaQuery.sizeOf(context).width * 0.6
+                        : MediaQuery.sizeOf(context).width * 0.7,
                     height: 45,
                     padding: EdgeInsetsDirectional.fromSTEB(24, 0, 24, 0),
                     iconPadding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),

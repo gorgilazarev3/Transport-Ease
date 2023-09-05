@@ -138,6 +138,8 @@ class _MyAppState extends State<TransportEaseApp> {
 DatabaseReference usersRef = FirebaseDatabase.instance.ref().child("users");
 DatabaseReference providersRef =
     FirebaseDatabase.instance.ref().child("providers");
+DatabaseReference newRideRequestsRef =
+    FirebaseDatabase.instance.ref().child("ride_requests");
 DatabaseReference rideRequestsRef = FirebaseDatabase.instance
     .ref()
     .child("providers")

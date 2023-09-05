@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:transportease_providers/Models/address.dart';
+import 'package:assets_audio_player/assets_audio_player.dart';
 
 import '../Models/app_user.dart';
 import '../Models/direction_details.dart';
@@ -14,6 +15,7 @@ class AppData extends ChangeNotifier {
   User? loggedInUser;
   AppUser? loggedInUserProfile;
   StreamSubscription<Position>? mainPageStreamSub;
+  AssetsAudioPlayer audioPlayer = AssetsAudioPlayer.newPlayer();
 
   void updatePickupLocationAddress(Address location) {
     pickUpLocation = location;

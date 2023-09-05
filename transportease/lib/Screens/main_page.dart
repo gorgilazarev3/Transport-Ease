@@ -29,6 +29,7 @@ import '../Models/direction_details.dart';
 import '../Models/nearby_driver.dart';
 import '../flutter_flow/flutter_flow_icon_button.dart';
 import '../flutter_flow/flutter_flow_theme.dart';
+import '../main.dart';
 
 class MainPageWidget extends StatefulWidget {
   const MainPageWidget({super.key});
@@ -919,7 +920,7 @@ class _MainPageWidgetState extends State<MainPageWidget>
     //
   }
 
-  void updateAvailableDriversOnMap() {
+  void updateAvailableDriversOnMap() async {
     setState(() {
       markersSet.clear();
     });
@@ -927,13 +928,54 @@ class _MainPageWidgetState extends State<MainPageWidget>
     Set<Marker> nearbyDriversMarkers = Set<Marker>();
     for (NearbyAvailableDriver driver
         in GeofireAssistant.nearbyAvailableDrivers) {
+      ImageConfiguration imageConfiguration =
+          createLocalImageConfiguration(context, size: const Size(0.1, 0.1));
+      var icon = BitmapDescriptor.defaultMarker;
+      DataSnapshot providerSnap = await providersRef.child(driver.key).get();
+      var provider = providerSnap.value as Map?;
+      if (provider != null) {
+        if (provider["role"].toString().toLowerCase() == "regular_driver") {
+          icon = await BitmapDescriptor.fromAssetImage(
+              imageConfiguration, "assets/images/regular_car_icon.png");
+        } else if (provider["role"].toString().toLowerCase() == "taxi_driver") {
+          icon = await BitmapDescriptor.fromAssetImage(
+              imageConfiguration, "assets/images/taxi_icon.png");
+        } else if (provider["role"].toString().toLowerCase() ==
+                "transporting_driver" &&
+            provider["provider_details"]["provider_type"]
+                    .toString()
+                    .toLowerCase() ==
+                "passengers_provider") {
+          if (provider["provider_details"]["routes_type"]
+                  .toString()
+                  .toLowerCase() ==
+              "local") {
+            icon = await BitmapDescriptor.fromAssetImage(
+                imageConfiguration, "assets/images/local_provider_icon.png");
+          } else if (provider["provider_details"]["routes_type"]
+                  .toString()
+                  .toLowerCase() ==
+              "international") {
+            icon = await BitmapDescriptor.fromAssetImage(imageConfiguration,
+                "assets/images/international_provider_icon.png");
+          }
+        } else if (provider["role"].toString().toLowerCase() ==
+                "transporting_driver" &&
+            provider["provider_details"]["provider_type"]
+                    .toString()
+                    .toLowerCase() ==
+                "carrier_provider") {
+          icon = await BitmapDescriptor.fromAssetImage(
+              imageConfiguration, "assets/images/carrier_provider_icon.png");
+        }
+      }
+
       MapsLocation.LatLng driverAvailablePos =
           MapsLocation.LatLng(driver.latitude, driver.longitude);
       Marker marker = Marker(
           markerId: MarkerId("driver${driver.key}"),
           position: driverAvailablePos,
-          icon:
-              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+          icon: icon,
           rotation: MethodsAssistants.randomNumber(360));
       nearbyDriversMarkers.add(marker);
     }

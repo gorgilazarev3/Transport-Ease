@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
@@ -9,6 +10,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as MapsLocation;
 import 'package:transportease_providers/DataHandler/app_data.dart';
+import 'package:transportease_providers/Models/driver.dart';
 import 'package:transportease_providers/Notifications/push_notification_service.dart';
 import 'package:transportease_providers/Screens/providers_account_page.dart';
 import 'package:transportease_providers/Screens/providers_earnings_page.dart';
@@ -65,6 +67,8 @@ class _ProviderMainPageWidgetState extends State<ProviderMainPageWidget> {
         desiredAccuracy: LocationAccuracy.high,
         forceAndroidLocationManager: true);
     currentPosition = position;
+    Provider.of<AppData>(context, listen: false)
+        .updateCurrentPosition(position);
 
     MapsLocation.LatLng latLngPosition =
         MapsLocation.LatLng(position.latitude, position.longitude);
@@ -79,10 +83,16 @@ class _ProviderMainPageWidgetState extends State<ProviderMainPageWidget> {
     //     currentPosition, context);
   }
 
-  void getCurrentProviderInfo() {
+  Future<void> getCurrentProviderInfo() async {
     Provider.of<AppData>(context, listen: false).updateFirebaseUser(
         FirebaseAuth.instance.currentUser ??
             Provider.of<AppData>(context, listen: false).loggedInUser!);
+
+    DataSnapshot driverSnap = await providersRef
+        .child(Provider.of<AppData>(context, listen: false).loggedInUser!.uid)
+        .get();
+    Driver driver = Driver.fromSnapshot(driverSnap);
+    Provider.of<AppData>(context, listen: false).updateDriverInfo(driver);
 
     PushNotificationService pushNotificationService = PushNotificationService();
     pushNotificationService.initialize(context);
@@ -201,6 +211,7 @@ class _ProviderMainPageWidgetState extends State<ProviderMainPageWidget> {
           currentPosition.latitude,
           currentPosition.longitude);
 
+      rideRequestsRef.set("searching");
       rideRequestsRef.onValue.listen((event) {});
       Fluttertoast.showToast(msg: "Го променивте вашиот статус во достапен.");
     } else {

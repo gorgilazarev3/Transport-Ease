@@ -77,6 +77,7 @@ dependencies:
   wtf_sliding_sheet: ^1.1.0
   geolocator: ^10.0.0
   dropdown_button2: ^2.3.9
+  firebase_messaging: ^14.6.7
 
 dev_dependencies:
   flutter_test:

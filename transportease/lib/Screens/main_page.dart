@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -60,9 +59,19 @@ class _MainPageWidgetState extends State<MainPageWidget>
 
   bool requestedRide = false;
 
+  bool driverAccepted = false;
+
   bool nearbyDriversLoaded = false;
 
   bool get getSearchDestShown => searchDestShown;
+  int driverRequestTimeout = 60;
+  String state = "normal";
+  StreamSubscription<DatabaseEvent>? rideStreamSub;
+  String? statusRide;
+  String? carDetails;
+  String? carPlates;
+  String? driverName;
+  String? driverPhone;
 
   List<MapsLocation.LatLng> pLineCoordinates = [];
   Set<Polyline> polylineSet = {};
@@ -70,6 +79,8 @@ class _MainPageWidgetState extends State<MainPageWidget>
   Set<Circle> circlesSet = {};
 
   late DatabaseReference rideRequestRef;
+
+  List<NearbyAvailableDriver> availableDrivers = [];
 
   @override
   void initState() {
@@ -112,18 +123,48 @@ class _MainPageWidgetState extends State<MainPageWidget>
     };
 
     rideRequestRef.set(rideInfoObj);
+    rideStreamSub = rideRequestRef.onValue.listen((event) {
+      if (event.snapshot.value == null) {
+        return;
+      }
+      var data = event.snapshot.value as Map;
+      if (data["status"] != null) {
+        statusRide = data["status"].toString();
+      }
+      if (data["car_details"] != null) {
+        carDetails = data["car_details"].toString();
+      }
+      if (data["driver_name"] != null) {
+        driverName = data["driver_name"].toString();
+      }
+      if (data["driver_phone"] != null) {
+        driverPhone = data["driver_phone"].toString();
+      }
+      if (data["car_plates"] != null) {
+        carPlates = data["car_plates"].toString();
+      }
+      if (statusRide == "accepted") {
+        displayAcceptedRequestDriverInfo();
+      }
+    });
   }
 
   void cancelRideRequest() {
     rideRequestRef.remove();
+    setState(() {
+      state = "normal";
+    });
   }
 
   Future<void> requestRide() async {
     setState(() {
       requestedRide = true;
+      state = "requesting";
     });
 
     saveRideRequest();
+    updateAvailableDriverList();
+    searchNearestDriver();
   }
 
   Future<void> cancelRide() async {
@@ -133,6 +174,12 @@ class _MainPageWidgetState extends State<MainPageWidget>
     cancelRideRequest();
   }
 
+  void displayAcceptedRequestDriverInfo() {
+    setState(() {
+      driverAccepted = true;
+    });
+  }
+
   Future<void> updateSearchDestShown() async {
     setState(() {
       searchDestShown = false;
@@ -140,6 +187,12 @@ class _MainPageWidgetState extends State<MainPageWidget>
     await getPlaceDirection();
     setState(() {
       showRideChoice = true;
+    });
+  }
+
+  void updateAvailableDriverList() {
+    setState(() {
+      availableDrivers = GeofireAssistant.nearbyAvailableDrivers;
     });
   }
 
@@ -520,8 +573,133 @@ class _MainPageWidgetState extends State<MainPageWidget>
                 child: Column(children: [
                   showRideChoice
                       ? (requestedRide
-                          ? RequestingRideWidget(
-                              requestRide: requestRide, cancelRide: cancelRide)
+                          ? (driverAccepted
+                              ? Container(
+                                  width: MediaQuery.sizeOf(context).width,
+                                  height:
+                                      MediaQuery.sizeOf(context).height * 0.3,
+                                  decoration: BoxDecoration(
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryBackground,
+                                    borderRadius: BorderRadius.only(
+                                      bottomLeft: Radius.circular(0),
+                                      bottomRight: Radius.circular(0),
+                                      topLeft: Radius.circular(25),
+                                      topRight: Radius.circular(25),
+                                    ),
+                                    shape: BoxShape.rectangle,
+                                  ),
+                                  child: SingleChildScrollView(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.max,
+                                      children: [
+                                        Align(
+                                          alignment: Alignment.center,
+                                          child: Padding(
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    10, 8, 0, 0),
+                                            child: Text(
+                                              'Превозникот е на пат кон Вас',
+                                              style:
+                                                  FlutterFlowTheme.of(context)
+                                                      .bodyLarge,
+                                            ),
+                                          ),
+                                        ),
+                                        Opacity(
+                                          opacity: 0.8,
+                                          child: Divider(
+                                            thickness: 1,
+                                            color: FlutterFlowTheme.of(context)
+                                                .primaryText,
+                                          ),
+                                        ),
+                                        Align(
+                                          alignment: AlignmentDirectional(0, 1),
+                                          child: Padding(
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    0, 20, 0, 0),
+                                            child: Container(
+                                              width: MediaQuery.sizeOf(context)
+                                                      .width *
+                                                  0.9,
+                                              height: MediaQuery.sizeOf(context)
+                                                      .height *
+                                                  1,
+                                              decoration: BoxDecoration(
+                                                color:
+                                                    FlutterFlowTheme.of(context)
+                                                        .secondaryBackground,
+                                              ),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.max,
+                                                children: [
+                                                  Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    children: [
+                                                      Expanded(
+                                                        child: Align(
+                                                          alignment: Alignment
+                                                              .centerLeft,
+                                                          // AlignmentDirectional(
+                                                          //     0, 0),
+                                                          child: Text(
+                                                            carDetails ??
+                                                                'Бела Toyota Corolla',
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .bodyMedium,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    children: [
+                                                      Expanded(
+                                                        child: Align(
+                                                          alignment: Alignment
+                                                              .centerLeft,
+                                                          // AlignmentDirectional(
+                                                          //     0, 0),
+                                                          child: Text(
+                                                            driverName ??
+                                                                'Ime Prezime',
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .bodyMedium,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Opacity(
+                                                    opacity: 0.8,
+                                                    child: Divider(
+                                                      thickness: 1,
+                                                      color:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primaryText,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              : RequestingRideWidget(
+                                  requestRide: requestRide,
+                                  cancelRide: cancelRide))
                           : RideChoiceWidget(
                               requestRide: requestRide,
                             ))
@@ -981,6 +1159,64 @@ class _MainPageWidgetState extends State<MainPageWidget>
     }
     setState(() {
       markersSet = nearbyDriversMarkers;
+    });
+  }
+
+  void searchNearestDriver() {
+    if (availableDrivers.length == 0) {
+      showDialog(
+          context: context,
+          builder: ((context) => Text(
+                "Во моментот нема достапни превозници, Ве молиме почекајте.",
+                style: TextStyle(color: Colors.white),
+              )));
+      cancelRideRequest();
+      resetTrip();
+      return;
+    } else {
+      var nearestDriver = availableDrivers[0];
+      notifyDriver(nearestDriver);
+      availableDrivers.removeAt(0);
+    }
+  }
+
+  Future<void> notifyDriver(NearbyAvailableDriver driver) async {
+    providersRef.child(driver.key).child("newRide").set(rideRequestRef.key);
+    DataSnapshot snap =
+        await providersRef.child(driver.key).child("token").get();
+    if (snap.value != null) {
+      String token = snap.value.toString();
+      MethodsAssistants.sendNotificationToDriver(
+          context, token, rideRequestRef.key.toString());
+    } else {
+      return;
+    }
+
+    const oneSecPassed = Duration(seconds: 1);
+    var timer = Timer.periodic(oneSecPassed, (timer) {
+      if (state != "requesting") {
+        providersRef.child(driver.key).child("newRide").set("cancelled");
+        providersRef.child(driver.key).child("newRide").onDisconnect();
+        driverRequestTimeout = 60;
+        timer.cancel();
+      }
+
+      driverRequestTimeout = driverRequestTimeout - 1;
+      providersRef.child(driver.key).child("newRide").onValue.listen((event) {
+        if (event.snapshot.value.toString() == "accepted") {
+          providersRef.child(driver.key).child("newRide").onDisconnect();
+          driverRequestTimeout = 60;
+          timer.cancel();
+        }
+      });
+      if (driverRequestTimeout == 0) {
+        providersRef.child(driver.key).child("newRide").set("timeout");
+        providersRef.child(driver.key).child("newRide").onDisconnect();
+        driverRequestTimeout = 60;
+        timer.cancel();
+
+        searchNearestDriver();
+      }
     });
   }
 }

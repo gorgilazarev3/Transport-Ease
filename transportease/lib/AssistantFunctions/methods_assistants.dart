@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -15,6 +16,7 @@ import 'package:transportease/Models/address.dart';
 import 'package:transportease/Models/app_user.dart';
 import 'package:transportease/Models/direction_details.dart';
 import 'package:transportease/config_maps.dart' as ConfigMap;
+import 'package:http/http.dart' as http;
 
 import '../config_maps.dart';
 
@@ -150,5 +152,38 @@ class MethodsAssistants {
 
     int randomNum = random.nextInt(num);
     return randomNum.toDouble();
+  }
+
+  static void sendNotificationToDriver(
+      BuildContext context, String token, String rideRequestID) async {
+    var pickup = Provider.of<AppData>(context, listen: false).pickUpLocation;
+    var dest = Provider.of<AppData>(context, listen: false).dropOffLocation;
+    Map<String, String> notificationMap = {
+      "title": "Ново барање за превоз",
+      "body":
+          "Имате ново барање за превоз, Ве молиме погледнете го. \n Место на поаѓање: ${pickup!.placeName} \n Дестинација: ${dest!.placeName}"
+    };
+
+    Map<String, String> dataMap = {
+      "click_action": "FLUTTER_NOTIFICATION_CLICK",
+      "id": "1",
+      "status": "done",
+      "ride_request_id": rideRequestID
+    };
+
+    Map sendNotificationMap = {
+      "notification": notificationMap,
+      "data": dataMap,
+      "priority": "high",
+      "to": token
+    };
+
+    Map<String, String> headersMap = {
+      "Content-Type": "application/json",
+      "Authorization": "key=${ConfigMap.messagingServerKey}"
+    };
+
+    var res = await http.post(Uri.parse("https://fcm.googleapis.com/fcm/send"),
+        headers: headersMap, body: jsonEncode(sendNotificationMap));
   }
 }

@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -18,30 +19,30 @@ import 'package:transportease_providers/config_maps.dart' as ConfigMap;
 import '../config_maps.dart';
 
 class MethodsAssistants {
-  static Future<Address> getAddressFromCoordinates(
-      Position position, context) async {
-    String apiKey = ConfigMap.browserMapsKey;
+  // static Future<Address> getAddressFromCoordinates(
+  //     Position position, context) async {
+  //   String apiKey = ConfigMap.browserMapsKey;
 
-    String url =
-        "https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.latitude},${position.longitude}&key=" +
-            apiKey;
+  //   String url =
+  //       "https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.latitude},${position.longitude}&key=" +
+  //           apiKey;
 
-    final response = await HttpAssistant.getRequest(url);
-    if (response.statusCode == 200) {
-      // If the server did return a 200 OK response,
-      // then parse the JSON.
-      Address address = Address.fromJson(jsonDecode(response.body));
+  //   final response = await HttpAssistant.getRequest(url);
+  //   if (response.statusCode == 200) {
+  //     // If the server did return a 200 OK response,
+  //     // then parse the JSON.
+  //     Address address = Address.fromJson(jsonDecode(response.body));
 
-      Provider.of<AppData>(context, listen: false)
-          .updatePickupLocationAddress(address);
+  //     Provider.of<AppData>(context, listen: false)
+  //         .updatePickupLocationAddress(address);
 
-      return address;
-    } else {
-      // If the server did not return a 200 OK response,
-      // then throw an exception.
-      throw Exception('Failed to load address');
-    }
-  }
+  //     return address;
+  //   } else {
+  //     // If the server did not return a 200 OK response,
+  //     // then throw an exception.
+  //     throw Exception('Failed to load address');
+  //   }
+  // }
 
   static Future<Address> getDropOffAddressDetailsFromPlaceId(
       String placeId, context) async {
@@ -142,5 +143,21 @@ class MethodsAssistants {
       AppUser user = AppUser.fromSnapshot(snapshot);
       Provider.of<AppData>(context, listen: false).updateAppUser(user);
     }
+  }
+
+  static void disableLiveLocationUpdatesOfProvider(BuildContext context) {
+    Provider.of<AppData>(context, listen: false).pauseMainPageSub();
+    Geofire.removeLocation(
+        Provider.of<AppData>(context, listen: false).loggedInUser!.uid);
+  }
+
+  static void enableLiveLocationUpdatesOfProvider(BuildContext context) {
+    Provider.of<AppData>(context, listen: false).resumeMainPageSub();
+    Geofire.setLocation(
+        Provider.of<AppData>(context, listen: false).loggedInUser!.uid,
+        Provider.of<AppData>(context, listen: false).currentPosition!.latitude,
+        Provider.of<AppData>(context, listen: false)
+            .currentPosition!
+            .longitude);
   }
 }

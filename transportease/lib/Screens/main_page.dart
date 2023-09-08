@@ -20,6 +20,7 @@ import 'package:transportease/Screens/ride_choice_widget.dart';
 import 'package:transportease/Screens/search_destination_component.dart';
 import 'package:transportease/config_maps.dart' as ConfigMap;
 import 'package:transportease/flutter_flow/flutter_flow_util.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:wtf_sliding_sheet/wtf_sliding_sheet.dart';
 
 import '../AssistantFunctions/geofire_assistant.dart';
@@ -29,6 +30,7 @@ import '../Models/nearby_driver.dart';
 import '../flutter_flow/flutter_flow_icon_button.dart';
 import '../flutter_flow/flutter_flow_theme.dart';
 import '../main.dart';
+import 'fare_dialog.dart';
 
 class MainPageWidget extends StatefulWidget {
   const MainPageWidget({super.key});
@@ -63,6 +65,10 @@ class _MainPageWidgetState extends State<MainPageWidget>
 
   bool nearbyDriversLoaded = false;
 
+  bool isRequestingDetails = false;
+
+  bool farePaid = false;
+
   bool get getSearchDestShown => searchDestShown;
   int driverRequestTimeout = 60;
   String state = "normal";
@@ -72,6 +78,7 @@ class _MainPageWidgetState extends State<MainPageWidget>
   String? carPlates;
   String? driverName;
   String? driverPhone;
+  String? durationText;
 
   List<MapsLocation.LatLng> pLineCoordinates = [];
   Set<Polyline> polylineSet = {};
@@ -85,6 +92,12 @@ class _MainPageWidgetState extends State<MainPageWidget>
   @override
   void initState() {
     super.initState();
+  }
+
+  void payFare() {
+    setState(() {
+      farePaid = true;
+    });
   }
 
   void saveRideRequest() {
@@ -123,7 +136,7 @@ class _MainPageWidgetState extends State<MainPageWidget>
     };
 
     rideRequestRef.set(rideInfoObj);
-    rideStreamSub = rideRequestRef.onValue.listen((event) {
+    rideStreamSub = rideRequestRef.onValue.listen((event) async {
       if (event.snapshot.value == null) {
         return;
       }
@@ -140,13 +153,100 @@ class _MainPageWidgetState extends State<MainPageWidget>
       if (data["driver_phone"] != null) {
         driverPhone = data["driver_phone"].toString();
       }
+      if (data["driver_location"] != null) {
+        double driverLat =
+            double.parse(data["driver_location"]["latitude"].toString());
+        double driverLng =
+            double.parse(data["driver_location"]["longitude"].toString());
+        MapsLocation.LatLng driverPosition =
+            MapsLocation.LatLng(driverLat, driverLng);
+        if (statusRide == "accepted") {
+          updateRideDurationToPickupLocation(driverPosition);
+        } else if (statusRide == "in_progress") {
+          updateRideDurationToDestination(driverPosition);
+        }
+      }
       if (data["car_plates"] != null) {
         carPlates = data["car_plates"].toString();
       }
       if (statusRide == "accepted") {
         displayAcceptedRequestDriverInfo();
+        Geofire.stopListener();
+        deleteGeofireMarkers();
+      }
+      String driverId = "";
+      if (statusRide == "finished") {
+        if (data["fare"] != null) {
+          int fare = int.parse(data["fare"].toString());
+          var res = await showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => FareDialogWidget(
+              paymentMethod: "cash",
+              fareAmount: fare,
+              payFare: payFare,
+            ),
+          );
+          if (data["driver_id"] != null) {
+            driverId = data["driver_id"].toString();
+          }
+          if (res && farePaid) {
+            rideRequestRef.onDisconnect();
+            rideStreamSub!.cancel();
+            rideStreamSub = null;
+            resetTrip();
+          }
+        }
       }
     });
+  }
+
+  void deleteGeofireMarkers() {
+    setState(() {
+      markersSet.removeWhere(
+        (element) => element.markerId.value.contains("driver"),
+      );
+    });
+  }
+
+  void updateRideDurationToPickupLocation(
+      MapsLocation.LatLng driverPosition) async {
+    if (isRequestingDetails == false) {
+      isRequestingDetails = true;
+      var userPosition = MapsLocation.LatLng(
+          currentPosition.latitude, currentPosition.longitude);
+      var rideDetails = await MethodsAssistants.obtainDirectionDetails(
+          userPosition, driverPosition);
+      if (rideDetails == null) {
+        return;
+      }
+      setState(() {
+        durationText = rideDetails.durationText;
+      });
+
+      isRequestingDetails = false;
+    }
+  }
+
+  void updateRideDurationToDestination(
+      MapsLocation.LatLng driverPosition) async {
+    if (isRequestingDetails == false) {
+      isRequestingDetails = true;
+      var userPosition =
+          Provider.of<AppData>(context, listen: false).dropOffLocation;
+      var userLatLng =
+          MapsLocation.LatLng(userPosition!.latitude, userPosition.longitude);
+      var rideDetails = await MethodsAssistants.obtainDirectionDetails(
+          userLatLng, driverPosition);
+      if (rideDetails == null) {
+        return;
+      }
+      setState(() {
+        durationText = rideDetails.durationText;
+      });
+
+      isRequestingDetails = false;
+    }
   }
 
   void cancelRideRequest() {
@@ -233,6 +333,13 @@ class _MainPageWidgetState extends State<MainPageWidget>
       markersSet.clear();
       circlesSet.clear();
       pLineCoordinates.clear();
+      statusRide = "";
+      driverName = "";
+      driverPhone = "";
+      carDetails = "";
+      carPlates = "";
+      driverAccepted = false;
+      farePaid = false;
     });
   }
 
@@ -240,10 +347,6 @@ class _MainPageWidgetState extends State<MainPageWidget>
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        title: Text("TransportEase"),
-        backgroundColor: FlutterFlowTheme.of(context).primary,
-      ),
       drawer: Drawer(
         elevation: 16,
         child: Column(
@@ -600,7 +703,29 @@ class _MainPageWidgetState extends State<MainPageWidget>
                                                 EdgeInsetsDirectional.fromSTEB(
                                                     10, 8, 0, 0),
                                             child: Text(
-                                              'Превозникот е на пат кон Вас',
+                                              statusRide == "accepted" &&
+                                                      durationText != null
+                                                  ? "Превозникот е на пат кон Вас - ${durationText}"
+                                                  : statusRide == "accepted" &&
+                                                          durationText == null
+                                                      ? "Превозникот е на пат кон Вас"
+                                                      : statusRide ==
+                                                                  "in_progress" &&
+                                                              durationText !=
+                                                                  null
+                                                          ? "Патувате кон дестинацијата - ${durationText}"
+                                                          : statusRide ==
+                                                                  "arrived"
+                                                              ? "Превозникот пристигна на вашата локација"
+                                                              : statusRide ==
+                                                                          "in_progress" &&
+                                                                      durationText ==
+                                                                          null
+                                                                  ? "Патувате кон дестинацијата"
+                                                                  : statusRide ==
+                                                                          "finished"
+                                                                      ? "Пристигнавте на дестинацијата"
+                                                                      : "Превозникот е на пат кон Вас",
                                               style:
                                                   FlutterFlowTheme.of(context)
                                                       .bodyLarge,
@@ -688,6 +813,76 @@ class _MainPageWidgetState extends State<MainPageWidget>
                                                               .primaryText,
                                                     ),
                                                   ),
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceAround,
+                                                    children: [
+                                                      Column(
+                                                        children: [
+                                                          FlutterFlowIconButton(
+                                                            icon: Icon(
+                                                              Icons.phone,
+                                                            ),
+                                                            borderRadius: 20,
+                                                            borderWidth: 1,
+                                                            onPressed: () {
+                                                              launch(
+                                                                  "tel://${driverPhone}");
+                                                            },
+                                                          ),
+                                                          Text(
+                                                            "Повикај",
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .bodySmall,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      Column(
+                                                        children: [
+                                                          FlutterFlowIconButton(
+                                                            icon: Icon(
+                                                              Icons.list,
+                                                            ),
+                                                            borderRadius: 20,
+                                                            borderWidth: 1,
+                                                            onPressed: () {
+                                                              print(
+                                                                  "details PRESED");
+                                                            },
+                                                          ),
+                                                          Text(
+                                                            "Детали",
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .bodySmall,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      Column(
+                                                        children: [
+                                                          FlutterFlowIconButton(
+                                                            icon: Icon(
+                                                              Icons.close,
+                                                            ),
+                                                            borderRadius: 20,
+                                                            borderWidth: 1,
+                                                            onPressed: () {
+                                                              print(
+                                                                  "CANCEL PRESED");
+                                                            },
+                                                          ),
+                                                          Text(
+                                                            "Откажи",
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .bodySmall,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ],
                                               ),
                                             ),
@@ -758,6 +953,9 @@ class _MainPageWidgetState extends State<MainPageWidget>
                                 GestureDetector(
                                   onTap: () {
                                     setState(() {
+                                      if (currentPosition == null) {
+                                        locatePosition();
+                                      }
                                       searchDestShown = !searchDestShown;
                                     });
                                   },

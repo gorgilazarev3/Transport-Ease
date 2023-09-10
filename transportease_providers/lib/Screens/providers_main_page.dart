@@ -97,6 +97,7 @@ class _ProviderMainPageWidgetState extends State<ProviderMainPageWidget> {
     PushNotificationService pushNotificationService = PushNotificationService();
     pushNotificationService.initialize(context);
     pushNotificationService.getToken(context);
+    MethodsAssistants.retrieveHistory(context);
   }
 
   @override

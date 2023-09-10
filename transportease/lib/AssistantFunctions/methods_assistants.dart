@@ -113,10 +113,17 @@ class MethodsAssistants {
     }
   }
 
-  static int calculateFare(DirectionDetails directionDetails) {
+  static int calculateFare(DirectionDetails directionDetails, String rideType) {
     //in USD
-    double timeTravelled = (directionDetails.durationValue / 60) * 0.20;
-    double distanceTravelled = (directionDetails.distanceValue / 1000) * 0.20;
+    double timeTravelled = 0.0;
+    double distanceTravelled = 0.0;
+    if (rideType.toLowerCase() == "taxi") {
+      timeTravelled = (directionDetails.durationValue / 60) * 0.15;
+      distanceTravelled = (directionDetails.distanceValue / 1000) * 0.30;
+    } else if (rideType.toLowerCase() == "regular") {
+      timeTravelled = (directionDetails.durationValue / 60) * 0.20;
+      distanceTravelled = (directionDetails.distanceValue / 1000) * 0.20;
+    }
     double fareUsd = timeTravelled + distanceTravelled;
 
     //in MKD, at time of writing this function 1$ USD = 57 MKD

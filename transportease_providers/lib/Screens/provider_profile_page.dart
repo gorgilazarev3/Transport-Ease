@@ -1,36 +1,35 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
-import 'package:transportease_providers/Screens/provider_profile_page.dart';
+import 'package:transportease_providers/DataHandler/app_data.dart';
+import 'package:transportease_providers/main.dart';
 
-import '../DataHandler/app_data.dart';
-import '../flutter_flow/flutter_flow_widgets.dart';
-import '../main.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-import 'package:transportease_providers/Models/providers_account_page_model.dart';
-export 'package:transportease_providers/Models/providers_account_page_model.dart';
+import 'package:transportease_providers/Models/provider_profile_page_model.dart';
+export 'package:transportease_providers/Models/provider_profile_page_model.dart';
 
-class ProviderAccountPageWidget extends StatefulWidget {
-  const ProviderAccountPageWidget({Key? key}) : super(key: key);
+class ProviderProfilePageWidget extends StatefulWidget {
+  const ProviderProfilePageWidget({Key? key}) : super(key: key);
 
   @override
-  _ProviderAccountPageWidgetState createState() =>
-      _ProviderAccountPageWidgetState();
+  _ProviderProfilePageWidgetState createState() =>
+      _ProviderProfilePageWidgetState();
 }
 
-class _ProviderAccountPageWidgetState extends State<ProviderAccountPageWidget> {
-  late ProviderAccountPageModel _model;
+class _ProviderProfilePageWidgetState extends State<ProviderProfilePageWidget> {
+  late ProviderProfilePageModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => ProviderAccountPageModel());
+    _model = createModel(context, () => ProviderProfilePageModel());
 
     WidgetsBinding.instance.addPostFrameCallback((_) => setState(() {}));
   }
@@ -110,8 +109,8 @@ class _ProviderAccountPageWidgetState extends State<ProviderAccountPageWidget> {
                 Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(0, 50, 0, 0),
                   child: Container(
-                    width: MediaQuery.sizeOf(context).width * 0.9,
-                    height: MediaQuery.sizeOf(context).height * 0.08,
+                    width: MediaQuery.sizeOf(context).width * 0.8,
+                    height: MediaQuery.sizeOf(context).height * 0.05,
                     decoration: BoxDecoration(
                       color: FlutterFlowTheme.of(context).secondaryBackground,
                     ),
@@ -143,8 +142,8 @@ class _ProviderAccountPageWidgetState extends State<ProviderAccountPageWidget> {
                 Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(0, 50, 0, 0),
                   child: Container(
-                    width: MediaQuery.sizeOf(context).width * 0.9,
-                    height: MediaQuery.sizeOf(context).height * 0.08,
+                    width: MediaQuery.sizeOf(context).width * 0.8,
+                    height: MediaQuery.sizeOf(context).height * 0.05,
                     decoration: BoxDecoration(
                       color: FlutterFlowTheme.of(context).secondaryBackground,
                     ),
@@ -157,17 +156,15 @@ class _ProviderAccountPageWidgetState extends State<ProviderAccountPageWidget> {
                           color: FlutterFlowTheme.of(context).primary,
                           size: 24,
                         ),
-                        Flexible(
-                          child: Text(
-                            Provider.of<AppData>(context, listen: false)
-                                        .driverInformation !=
-                                    null
-                                ? Provider.of<AppData>(context, listen: false)
-                                    .driverInformation!
-                                    .email
-                                : 'test@email.com',
-                            style: FlutterFlowTheme.of(context).titleLarge,
-                          ),
+                        Text(
+                          Provider.of<AppData>(context, listen: false)
+                                      .driverInformation !=
+                                  null
+                              ? Provider.of<AppData>(context, listen: false)
+                                  .driverInformation!
+                                  .email
+                              : 'test@email.com',
+                          style: FlutterFlowTheme.of(context).titleLarge,
                         ),
                       ]
                           .divide(SizedBox(width: 50))
@@ -178,8 +175,8 @@ class _ProviderAccountPageWidgetState extends State<ProviderAccountPageWidget> {
                 Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(0, 50, 0, 0),
                   child: Container(
-                    width: MediaQuery.sizeOf(context).width * 0.9,
-                    height: MediaQuery.sizeOf(context).height * 0.08,
+                    width: MediaQuery.sizeOf(context).width * 0.8,
+                    height: MediaQuery.sizeOf(context).height * 0.05,
                     decoration: BoxDecoration(
                       color: FlutterFlowTheme.of(context).secondaryBackground,
                     ),

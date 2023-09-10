@@ -13,10 +13,12 @@ import '../Models/ride_choice_model.dart';
 export '../Models/ride_choice_model.dart';
 
 class RideChoiceWidget extends StatefulWidget {
-  const RideChoiceWidget({Key? key, required this.requestRide})
+  const RideChoiceWidget(
+      {Key? key, required this.requestRide, required this.changeRideType})
       : super(key: key);
 
   final Function requestRide;
+  final Function changeRideType;
 
   @override
   _RideChoiceWidgetState createState() =>
@@ -26,6 +28,8 @@ class RideChoiceWidget extends StatefulWidget {
 class _RideChoiceWidgetState extends State<RideChoiceWidget> {
   late RideChoiceWidgetModel _model;
   final Function requestRide;
+
+  String rideType = "regular";
 
   _RideChoiceWidgetState({required this.requestRide});
 
@@ -79,90 +83,101 @@ class _RideChoiceWidgetState extends State<RideChoiceWidget> {
             child: Column(
               mainAxisSize: MainAxisSize.max,
               children: [
-                Container(
-                  width: MediaQuery.sizeOf(context).width,
-                  height: MediaQuery.sizeOf(context).height * 0.1,
-                  decoration: BoxDecoration(
-                    color: FlutterFlowTheme.of(context).secondaryBackground,
-                  ),
-                  child: Card(
-                    clipBehavior: Clip.antiAliasWithSaveLayer,
-                    color: FlutterFlowTheme.of(context).secondary,
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      rideType = "regular";
+                    });
+                    widget.changeRideType(rideType);
+                  },
+                  child: Container(
+                    width: MediaQuery.sizeOf(context).width,
+                    height: MediaQuery.sizeOf(context).height * 0.1,
+                    decoration: BoxDecoration(
+                      color: FlutterFlowTheme.of(context).secondaryBackground,
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.asset(
-                            'assets/images/regular_car_render.png',
-                            width: MediaQuery.sizeOf(context).width * 0.4,
-                            height: MediaQuery.sizeOf(context).height * 0.4,
-                            fit: BoxFit.fill,
+                    child: Card(
+                      clipBehavior: Clip.antiAliasWithSaveLayer,
+                      color: FlutterFlowTheme.of(context).secondary,
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.asset(
+                              'assets/images/regular_car_render.png',
+                              width: MediaQuery.sizeOf(context).width * 0.4,
+                              height: MediaQuery.sizeOf(context).height * 0.4,
+                              fit: BoxFit.fill,
+                            ),
                           ),
-                        ),
-                        Container(
-                          width: MediaQuery.sizeOf(context).width * 0.3,
-                          height: 100,
-                          decoration: BoxDecoration(),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Row(
-                                mainAxisSize: MainAxisSize.max,
-                                children: [
-                                  Text(
-                                    'Автомобил',
-                                    style: FlutterFlowTheme.of(context)
-                                        .titleMedium
-                                        .override(
-                                          fontFamily:
-                                              FlutterFlowTheme.of(context)
-                                                  .titleMediumFamily,
-                                          fontSize: 18,
-                                          useGoogleFonts: GoogleFonts.asMap()
-                                              .containsKey(
-                                                  FlutterFlowTheme.of(context)
-                                                      .titleMediumFamily),
-                                        ),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                mainAxisSize: MainAxisSize.max,
-                                children: [
-                                  Text(
-                                    Provider.of<AppData>(context).tripDetails !=
-                                            null
-                                        ? Provider.of<AppData>(context)
-                                            .tripDetails!
-                                            .distanceText
-                                        : 'x km',
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          fontFamily:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodyMediumFamily,
-                                          color: FlutterFlowTheme.of(context)
-                                              .accent4,
-                                          useGoogleFonts: GoogleFonts.asMap()
-                                              .containsKey(
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMediumFamily),
-                                        ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                          Container(
+                            width: MediaQuery.sizeOf(context).width * 0.3,
+                            height: 100,
+                            decoration: BoxDecoration(),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.max,
+                                  children: [
+                                    Text(
+                                      'Автомобил',
+                                      style: FlutterFlowTheme.of(context)
+                                          .titleMedium
+                                          .override(
+                                            fontFamily:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleMediumFamily,
+                                            fontSize: 18,
+                                            useGoogleFonts: GoogleFonts.asMap()
+                                                .containsKey(
+                                                    FlutterFlowTheme.of(context)
+                                                        .titleMediumFamily),
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisSize: MainAxisSize.max,
+                                  children: [
+                                    Text(
+                                      Provider.of<AppData>(context)
+                                                  .tripDetails !=
+                                              null
+                                          ? MethodsAssistants.calculateFare(
+                                                  Provider.of<AppData>(context)
+                                                      .tripDetails!,
+                                                  rideType)
+                                              .toString()
+                                          : 'x денари',
+                                      style: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .override(
+                                            fontFamily:
+                                                FlutterFlowTheme.of(context)
+                                                    .bodyMediumFamily,
+                                            color: FlutterFlowTheme.of(context)
+                                                .accent4,
+                                            useGoogleFonts: GoogleFonts.asMap()
+                                                .containsKey(
+                                                    FlutterFlowTheme.of(context)
+                                                        .bodyMediumFamily),
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -195,61 +210,72 @@ class _RideChoiceWidgetState extends State<RideChoiceWidget> {
                             ),
                           ),
                         ),
-                        Container(
-                          width: MediaQuery.sizeOf(context).width * 0.3,
-                          height: 100,
-                          decoration: BoxDecoration(),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Row(
-                                mainAxisSize: MainAxisSize.max,
-                                children: [
-                                  Text(
-                                    'Такси',
-                                    style: FlutterFlowTheme.of(context)
-                                        .titleMedium
-                                        .override(
-                                          fontFamily:
-                                              FlutterFlowTheme.of(context)
-                                                  .titleMediumFamily,
-                                          fontSize: 18,
-                                          useGoogleFonts: GoogleFonts.asMap()
-                                              .containsKey(
-                                                  FlutterFlowTheme.of(context)
-                                                      .titleMediumFamily),
-                                        ),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                mainAxisSize: MainAxisSize.max,
-                                children: [
-                                  Text(
-                                    Provider.of<AppData>(context).tripDetails !=
-                                            null
-                                        ? Provider.of<AppData>(context)
-                                            .tripDetails!
-                                            .distanceText
-                                        : 'x km',
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          fontFamily:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodyMediumFamily,
-                                          color: FlutterFlowTheme.of(context)
-                                              .accent4,
-                                          useGoogleFonts: GoogleFonts.asMap()
-                                              .containsKey(
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMediumFamily),
-                                        ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              rideType = "taxi";
+                            });
+                            widget.changeRideType(rideType);
+                          },
+                          child: Container(
+                            width: MediaQuery.sizeOf(context).width * 0.3,
+                            height: 100,
+                            decoration: BoxDecoration(),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.max,
+                                  children: [
+                                    Text(
+                                      'Такси',
+                                      style: FlutterFlowTheme.of(context)
+                                          .titleMedium
+                                          .override(
+                                            fontFamily:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleMediumFamily,
+                                            fontSize: 18,
+                                            useGoogleFonts: GoogleFonts.asMap()
+                                                .containsKey(
+                                                    FlutterFlowTheme.of(context)
+                                                        .titleMediumFamily),
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisSize: MainAxisSize.max,
+                                  children: [
+                                    Text(
+                                      Provider.of<AppData>(context)
+                                                  .tripDetails !=
+                                              null
+                                          ? MethodsAssistants.calculateFare(
+                                                  Provider.of<AppData>(context)
+                                                      .tripDetails!,
+                                                  rideType)
+                                              .toString()
+                                          : 'x денари',
+                                      style: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .override(
+                                            fontFamily:
+                                                FlutterFlowTheme.of(context)
+                                                    .bodyMediumFamily,
+                                            color: FlutterFlowTheme.of(context)
+                                                .accent4,
+                                            useGoogleFonts: GoogleFonts.asMap()
+                                                .containsKey(
+                                                    FlutterFlowTheme.of(context)
+                                                        .bodyMediumFamily),
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -302,8 +328,13 @@ class _RideChoiceWidgetState extends State<RideChoiceWidget> {
                 padding: const EdgeInsets.only(left: 100),
                 child: Text(
                   Provider.of<AppData>(context).tripDetails != null
-                      ? MethodsAssistants.calculateFare(
-                                  Provider.of<AppData>(context).tripDetails!)
+                      ? Provider.of<AppData>(context)
+                              .tripDetails!
+                              .distanceText +
+                          " - " +
+                          MethodsAssistants.calculateFare(
+                                  Provider.of<AppData>(context).tripDetails!,
+                                  rideType)
                               .toString() +
                           " ден."
                       : '0 ден.',

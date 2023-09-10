@@ -51,7 +51,6 @@ class _RatingDialogWidgetState extends State<RatingDialogWidget> {
       onTap: () => FocusScope.of(context).requestFocus(_model.unfocusNode),
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         body: SafeArea(
           top: true,
           // child: Column(
@@ -112,17 +111,29 @@ class _RatingDialogWidgetState extends State<RatingDialogWidget> {
                         starCount: 5,
                         size: 45,
                         onRatingChanged: (rating) {
-                          starCount = rating;
+                          setState(() {
+                            starCount = rating;
+                          });
                           if (starCount == 0 || starCount == 1) {
-                            title = "Многу лошо";
+                            setState(() {
+                              title = "Многу лошо";
+                            });
                           } else if (starCount == 2) {
-                            title = "Лошо";
+                            setState(() {
+                              title = "Лошо";
+                            });
                           } else if (starCount == 3) {
-                            title = "Добро";
+                            setState(() {
+                              title = "Добро";
+                            });
                           } else if (starCount == 4) {
-                            title = "Многу добро";
+                            setState(() {
+                              title = "Многу добро";
+                            });
                           } else if (starCount == 5) {
-                            title = "Одлично";
+                            setState(() {
+                              title = "Одлично";
+                            });
                           }
                         },
                       )),
@@ -165,7 +176,7 @@ class _RatingDialogWidgetState extends State<RatingDialogWidget> {
                             ratingsRef.set(starCount.toString());
                           }
 
-                          Navigator.pop(context);
+                          Navigator.pop(context, "rated");
                         },
                         child: Align(
                           alignment: AlignmentDirectional(0, 1),

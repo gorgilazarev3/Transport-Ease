@@ -7,6 +7,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -15,6 +16,7 @@ import 'package:google_maps_flutter_platform_interface/src/types/location.dart'
 import 'package:provider/provider.dart';
 import 'package:transportease/AssistantFunctions/methods_assistants.dart';
 import 'package:transportease/Models/address.dart';
+import 'package:transportease/Screens/rating_dialog.dart';
 import 'package:transportease/Screens/requesting_ride_widget.dart';
 import 'package:transportease/Screens/ride_choice_widget.dart';
 import 'package:transportease/Screens/search_destination_component.dart';
@@ -79,6 +81,7 @@ class _MainPageWidgetState extends State<MainPageWidget>
   String? driverName;
   String? driverPhone;
   String? durationText;
+  String rideType = "regular";
 
   List<MapsLocation.LatLng> pLineCoordinates = [];
   Set<Polyline> polylineSet = {};
@@ -97,6 +100,12 @@ class _MainPageWidgetState extends State<MainPageWidget>
   void payFare() {
     setState(() {
       farePaid = true;
+    });
+  }
+
+  void changeRideType(String newRideType) {
+    setState(() {
+      rideType = newRideType;
     });
   }
 
@@ -132,7 +141,8 @@ class _MainPageWidgetState extends State<MainPageWidget>
       "pickUp_address": pickUp.placeFormattedAddress,
       "destination_address": destination.placeFormattedAddress,
       "pickUp_place": pickUp.placeName,
-      "destination_place": destination.placeName
+      "destination_place": destination.placeName,
+      "ride_type": rideType
     };
 
     rideRequestRef.set(rideInfoObj);
@@ -190,11 +200,19 @@ class _MainPageWidgetState extends State<MainPageWidget>
           if (data["driver_id"] != null) {
             driverId = data["driver_id"].toString();
           }
-          if (res && farePaid) {
-            rideRequestRef.onDisconnect();
-            rideStreamSub!.cancel();
-            rideStreamSub = null;
-            resetTrip();
+          if (res == "paid" && farePaid) {
+            var res_rating = await showDialog(
+              builder: (context) => RatingDialogWidget(
+                driverId: driverId,
+              ),
+              context: context,
+            );
+            if (res_rating == "rated") {
+              rideRequestRef.onDisconnect();
+              rideStreamSub!.cancel();
+              rideStreamSub = null;
+              resetTrip();
+            }
           }
         }
       }
@@ -897,7 +915,7 @@ class _MainPageWidgetState extends State<MainPageWidget>
                                   cancelRide: cancelRide))
                           : RideChoiceWidget(
                               requestRide: requestRide,
-                            ))
+                              changeRideType: changeRideType))
                       : Container(
                           width: MediaQuery.sizeOf(context).width,
                           height: MediaQuery.sizeOf(context).height * 0.3,
@@ -1360,7 +1378,7 @@ class _MainPageWidgetState extends State<MainPageWidget>
     });
   }
 
-  void searchNearestDriver() {
+  Future<void> searchNearestDriver() async {
     if (availableDrivers.length == 0) {
       showDialog(
           context: context,
@@ -1373,8 +1391,24 @@ class _MainPageWidgetState extends State<MainPageWidget>
       return;
     } else {
       var nearestDriver = availableDrivers[0];
-      notifyDriver(nearestDriver);
-      availableDrivers.removeAt(0);
+      var nearestDriverRideType =
+          await providersRef.child(nearestDriver.key).child("role").get();
+      if (nearestDriverRideType.value != null) {
+        String driverType = nearestDriverRideType.value.toString();
+        String compareType = rideType + "_driver";
+        if (driverType == compareType) {
+          notifyDriver(nearestDriver);
+          availableDrivers.removeAt(0);
+        } else {
+          Fluttertoast.showToast(
+              msg:
+                  "Во моментот нема достапни превозници од бараниот тип. Ве молиме селектирајте друг тип на превозник.");
+        }
+      } else {
+        Fluttertoast.showToast(
+            msg:
+                "Во моментот нема достапни превозници. Ве молиме обидете се повторно за неколку минути.");
+      }
     }
   }
 

@@ -1,3 +1,6 @@
+import 'package:transportease_providers/Screens/total_fares_page.dart';
+
+import '../DataHandler/app_data.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
@@ -38,19 +41,6 @@ class _ProviderEarningsPageWidgetState
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).requestFocus(_model.unfocusNode),
-      child: Scaffold(
-        key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-        body: SafeArea(
-          top: true,
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: [],
-          ),
-        ),
-      ),
-    );
+    return const TotalFaresPageWidget();
   }
 }

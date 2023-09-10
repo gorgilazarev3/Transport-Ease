@@ -9,6 +9,7 @@ import 'package:assets_audio_player/assets_audio_player.dart';
 import '../Models/app_user.dart';
 import '../Models/direction_details.dart';
 import '../Models/driver.dart';
+import '../Models/trip_history.dart';
 
 class AppData extends ChangeNotifier {
   Address? pickUpLocation, dropOffLocation;
@@ -20,6 +21,27 @@ class AppData extends ChangeNotifier {
   AssetsAudioPlayer audioPlayer = AssetsAudioPlayer.newPlayer();
   Position? currentPosition;
   Driver? driverInformation;
+  String earnings = "0";
+  int numTrips = 0;
+  List<String> tripHistoryKeys = [];
+  List<TripHistory> tripHistoryData = [];
+  String title = "";
+  double starCount = 0.0;
+
+  void updateTitle(String e) {
+    title = e;
+    notifyListeners();
+  }
+
+  void updateStarCount(double e) {
+    starCount = e;
+    notifyListeners();
+  }
+
+  void updateEarnings(String e) {
+    earnings = e;
+    notifyListeners();
+  }
 
   void updatePickupLocationAddress(Address location) {
     pickUpLocation = location;
@@ -98,6 +120,26 @@ class AppData extends ChangeNotifier {
 
   void updateCurrentPosition(Position position) {
     currentPosition = position;
+    notifyListeners();
+  }
+
+  void updateNumTrips(int numTripsNew) {
+    numTrips = numTripsNew;
+    notifyListeners();
+  }
+
+  void updateTripHistoryKeys(List<String> keys) {
+    tripHistoryKeys = keys;
+    notifyListeners();
+  }
+
+  void updateTripHistoryData(List<TripHistory> tripHistory) {
+    tripHistoryData = tripHistory;
+    notifyListeners();
+  }
+
+  void addTripHistoryData(TripHistory tripHistory) {
+    tripHistoryData.add(tripHistory);
     notifyListeners();
   }
 }

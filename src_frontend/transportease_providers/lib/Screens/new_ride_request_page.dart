@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
@@ -10,6 +11,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart' as MapsLocation;
 import 'package:transportease_providers/AssistantFunctions/maps_toolkit_assistant.dart';
 import 'package:transportease_providers/main.dart';
 import 'package:wtf_sliding_sheet/wtf_sliding_sheet.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 
 import '../AssistantFunctions/methods_assistants.dart';
 import '../DataHandler/app_data.dart';
@@ -84,6 +86,8 @@ class _NewRidePageWidgetState extends State<NewRidePageWidget> {
   int duration = 0;
   String durationText = "x минути";
   String rideType = "regular";
+
+  double velocity = 0;
 
   void locatePosition() async {
     MapsLocation.LatLng latLngPosition = MapsLocation.LatLng(
@@ -199,6 +203,9 @@ class _NewRidePageWidgetState extends State<NewRidePageWidget> {
 
   @override
   void initState() {
+      userAccelerometerEventStream().listen((UserAccelerometerEvent event) {
+      _onAccelerate(event);
+    });
     super.initState();
     _model = createModel(context, () => NewRidePageModel());
 
@@ -213,6 +220,20 @@ class _NewRidePageWidgetState extends State<NewRidePageWidget> {
     _model.dispose();
 
     super.dispose();
+  }
+
+  void _onAccelerate(UserAccelerometerEvent event) {
+    double newVelocity = sqrt(
+        event.x * event.x + event.y * event.y + event.z * event.z
+    );
+
+    if ((newVelocity - velocity).abs() < 1) {
+      return;
+    }
+
+    setState(() {
+      velocity = newVelocity;
+    });
   }
 
   void setRideType() async {
@@ -327,7 +348,7 @@ class _NewRidePageWidgetState extends State<NewRidePageWidget> {
                                     //         .tripDetails!
                                     //         .durationText
                                     //     : 'x минути',
-                                    durationText,
+                                    durationText + " - ${velocity} km/h",
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
                                         .override(
@@ -343,6 +364,33 @@ class _NewRidePageWidgetState extends State<NewRidePageWidget> {
                                                       .bodyMediumFamily),
                                         ),
                                   ),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsetsDirectional.fromSTEB(
+                                    10, 8, 0, 0),
+                                child: Text(
+                                  // Provider.of<AppData>(context).tripDetails !=
+                                  //         null
+                                  //     ? Provider.of<AppData>(context)
+                                  //         .tripDetails!
+                                  //         .durationText
+                                  //     : 'x минути',
+                                  "${velocity} km/h",
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        fontFamily:
+                                            FlutterFlowTheme.of(context)
+                                                .bodyMediumFamily,
+                                        color: FlutterFlowTheme.of(context)
+                                            .secondaryText,
+                                        fontWeight: FontWeight.normal,
+                                        useGoogleFonts: GoogleFonts.asMap()
+                                            .containsKey(
+                                                FlutterFlowTheme.of(context)
+                                                    .bodyMediumFamily),
+                                      ),
                                 ),
                               ),
                               Padding(

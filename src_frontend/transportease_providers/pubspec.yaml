@@ -82,6 +82,7 @@ dependencies:
   maps_toolkit: ^2.0.1
   smooth_star_rating_null_safety: ^1.0.4+2
   geoflutterfire2: ^2.3.15
+  sensors_plus: ^4.0.2
 
 dev_dependencies:
   flutter_test:

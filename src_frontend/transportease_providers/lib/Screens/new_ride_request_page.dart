@@ -348,7 +348,7 @@ class _NewRidePageWidgetState extends State<NewRidePageWidget> {
                                     //         .tripDetails!
                                     //         .durationText
                                     //     : 'x минути',
-                                    durationText + " - ${velocity} km/h",
+                                    durationText + " - ${velocity.toStringAsFixed(2)} km/h",
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
                                         .override(
@@ -364,33 +364,6 @@ class _NewRidePageWidgetState extends State<NewRidePageWidget> {
                                                       .bodyMediumFamily),
                                         ),
                                   ),
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    10, 8, 0, 0),
-                                child: Text(
-                                  // Provider.of<AppData>(context).tripDetails !=
-                                  //         null
-                                  //     ? Provider.of<AppData>(context)
-                                  //         .tripDetails!
-                                  //         .durationText
-                                  //     : 'x минути',
-                                  "${velocity} km/h",
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .override(
-                                        fontFamily:
-                                            FlutterFlowTheme.of(context)
-                                                .bodyMediumFamily,
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryText,
-                                        fontWeight: FontWeight.normal,
-                                        useGoogleFonts: GoogleFonts.asMap()
-                                            .containsKey(
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMediumFamily),
-                                      ),
                                 ),
                               ),
                               Padding(

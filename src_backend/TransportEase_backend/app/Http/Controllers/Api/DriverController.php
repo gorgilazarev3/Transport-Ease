@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Driver;
 use App\Models\ProviderDetails;
 use App\Models\User;
+use App\Services\DriverService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 
 class DriverController extends Controller
@@ -15,10 +17,17 @@ class DriverController extends Controller
     /**
      * Display a listing of the resource.
      */
+    protected DriverService $driverService;
+
+    public function __construct(DriverService $driverService)
+    {
+        $this->driverService = $driverService;
+    }
+
     public function index()
     {
         //
-        return Driver::all();
+        return $this->driverService->getAllDrivers();
     }
 
     /**
@@ -100,7 +109,7 @@ class DriverController extends Controller
     public function show(int $id)
     {
         //
-        return Driver::query()->find($id);
+        return $this->driverService->getDriverById($id);
     }
 
     /**
@@ -125,8 +134,59 @@ class DriverController extends Controller
     public function destroy(int $id)
     {
         //
-        $driver = Driver::query()->find($id);
-        Driver::destroy($id);
-        return $driver;
+        return $this->driverService->deleteDriverById($id);
+    }
+
+    public function getDriverByUserId(String $userId)
+    {
+        //
+        return $this->driverService->getDriverByUserId($userId);
+    }
+
+    public function updateNewRide(int $id, Request $request)
+    {
+        //
+        $newRide = $request->all(['newRide'])['newRide'];
+        Log::info($newRide);
+        error_log($newRide);
+
+        return $this->driverService->updateDriverRideById($id, $newRide);
+    }
+
+    public function updateToken(int $id, Request $request)
+    {
+        //
+        $token = $request->all(['token'])['token'];
+        Log::info($token);
+        error_log($token);
+
+        return $this->driverService->updateDriverToken($id, $token);
+    }
+
+    public function updateEarnings(int $id, Request $request)
+    {
+        //
+        $fare = $request->post('fareAmount');
+        return $this->driverService->updateDriverEarnings($id, $fare);
+    }
+
+    public function updateRating(int $id, Request $request)
+    {
+        //
+        $newRating = $request->post('newRating');
+        $newRating = doubleval($newRating);
+        return $this->driverService->updateDriverRating($id, $newRating);
+    }
+
+    public function fullInfo(int $id)
+    {
+        //
+        return $this->driverService->getDriverByIdWithAllInfo($id);
+    }
+
+    public function fullInfoUserId(string $id)
+    {
+        //
+        return $this->driverService->getDriverByUserIdWithAllInfo($id);
     }
 }

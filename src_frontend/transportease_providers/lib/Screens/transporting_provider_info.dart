@@ -1,5 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:transportease_providers/AssistantFunctions/backend_api_assistant.dart';
+import 'package:transportease_providers/DataHandler/app_data.dart';
+import 'package:transportease_providers/Models/app_user.dart';
 
 import '../main.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
@@ -630,7 +634,7 @@ class _TransportProviderInformationWidgetState
                                                                   0, 0, 0, 16),
                                                       child: FFButtonWidget(
                                                         onPressed: () {
-                                                          saveProviderInfo(
+                                                          saveProviderInfoCustom(
                                                               context);
                                                         },
                                                         text:
@@ -767,4 +771,50 @@ class _TransportProviderInformationWidgetState
       context.go("/home");
     }
   }
+
+      Future<void> saveProviderInfoCustom(BuildContext context) async {
+    if (validateFields(context)) {
+      Map carInfoMap = {};
+      if (_model.providerTypeValue!.toLowerCase() == "превоз на патници") {
+        String routes_type = "local";
+        if (_model.transportingTypeValue!.toLowerCase() == "меѓуградски") {
+          routes_type = "local";
+        } else {
+          routes_type = "international";
+        }
+
+        carInfoMap = {
+          "provider_type": "passengers_provider",
+          "provider_seats": _model.taxiSeatsController.text,
+          "routes_type": routes_type,
+        };
+      } else {
+        carInfoMap = {
+          "provider_type": "carrier_provider",
+          "carrier_capacity": _model.carrierCapacityController.text,
+        };
+      }
+
+            final storage = FlutterSecureStorage();
+            String? userName = await storage.read(key: 'userName');
+            String? userEmail = await storage.read(key: 'userEmail');
+            String? userPhone = await storage.read(key: 'userPhone');
+            String? userRole = await storage.read(key: 'userRole');
+              Map userDataObj = {
+          "name": userName,
+          "email": userEmail,
+          "phone": userPhone,
+          "role": userRole,
+          "id": "TEST"
+        };
+
+      AppUser toBeCreated = AppUser(id: userDataObj['id'], email: userDataObj['email'], name: userDataObj['name'], phone: userDataObj['phone'], role: userDataObj['role']);
+      carInfoMap['user'] = toBeCreated;
+      String? enteredPassword = await storage.read(key: 'enteredPassword');
+      carInfoMap['password'] = enteredPassword;
+      await BackendAPIAssistant.registerNewDriverWithObj(carInfoMap);
+      await BackendAPIAssistant.authenticateUserWithEmailAndPassword(toBeCreated.email, enteredPassword!);
+      context.go("/home");
+    }
 }
+    }

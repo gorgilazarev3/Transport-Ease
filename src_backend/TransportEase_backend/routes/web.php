@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('landing');
 });
 
 Route::middleware([
@@ -25,4 +26,14 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+});
+
+Route::middleware('checkAdminPermissions')->group(function () {
+   Route::get('/admin', [AdminController::class, 'panel_action']
+//       function () {
+//       return view('admin.admin-panel', ['activeLink' => 'dashboard']);
+//   }
+   )->name('admin');
+   Route::delete('/admin/providers/{id}', [AdminController::class, 'delete_provider'])->name('admin.delete_provider');
+   Route::delete('/admin/ride-requests/{id}', [AdminController::class, 'delete_ride_request'])->name('admin.delete_ride_request');
 });

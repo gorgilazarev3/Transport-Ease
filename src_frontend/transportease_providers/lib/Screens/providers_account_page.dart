@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
+import 'package:transportease_providers/AssistantFunctions/backend_api_assistant.dart';
 import 'package:transportease_providers/Screens/provider_profile_page.dart';
 
 import '../DataHandler/app_data.dart';
@@ -212,7 +213,8 @@ class _ProviderAccountPageWidgetState extends State<ProviderAccountPageWidget> {
                   padding: EdgeInsetsDirectional.fromSTEB(0, 50, 0, 0),
                   child: FFButtonWidget(
                     onPressed: () {
-                      signOutUser();
+                      // signOutUser();
+                      signOutUserFromBackend();
                       context.go("/login");
                     },
                     text: 'Одјави се',
@@ -264,5 +266,24 @@ class _ProviderAccountPageWidgetState extends State<ProviderAccountPageWidget> {
     Provider.of<AppData>(context, listen: false).updateTitle("");
 
     FirebaseAuth.instance.signOut();
+  }
+
+    Future<void> signOutUserFromBackend() async {
+    Geofire.removeLocation(
+        Provider.of<AppData>(context, listen: false).loggedInUserProfile!.id);
+    availableProvidersRef
+        .doc(Provider.of<AppData>(context, listen: false).loggedInUserProfile!.id)
+        .delete();
+    // rideRequestsRef.onDisconnect();
+    // rideRequestsRef.remove();
+    Provider.of<AppData>(context, listen: false).updateEarnings("0.0");
+    Provider.of<AppData>(context, listen: false).tripHistoryData.clear();
+    Provider.of<AppData>(context, listen: false).tripHistoryKeys.clear();
+    Provider.of<AppData>(context, listen: false).updateStarCount(0.0);
+    Provider.of<AppData>(context, listen: false).updateNumTrips(0);
+    Provider.of<AppData>(context, listen: false).updateTitle("");
+
+    // FirebaseAuth.instance.signOut();
+    BackendAPIAssistant.signOutDriver();
   }
 }

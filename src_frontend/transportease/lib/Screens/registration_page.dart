@@ -5,6 +5,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:transportease/AssistantFunctions/backend_api_assistant.dart';
+import 'package:transportease/Models/app_user.dart';
 
 import '../Models/registration_model.dart';
 import '../flutter_flow/flutter_flow_animations.dart';
@@ -1009,7 +1011,7 @@ class _RegistrationPageWidgetState extends State<RegistrationPageWidget>
                                                           // context.goNamedAuth(
                                                           //     'LoginPage',
                                                           //     context.mounted);
-                                                          registerNewUser(
+                                                          registerNewUserWithBackend(
                                                               context);
                                                         },
                                                         text:
@@ -2014,6 +2016,8 @@ class _RegistrationPageWidgetState extends State<RegistrationPageWidget>
     }
   }
 
+  
+
   bool validateLoginFields(BuildContext context) {
     bool result = false;
 
@@ -2092,6 +2096,85 @@ class _RegistrationPageWidgetState extends State<RegistrationPageWidget>
               msg:
                   "Погрешна лозинка. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
         }
+      }
+    }
+  }
+
+  void authenticateCustom(BuildContext context) async {
+    if (validateFields(context)) {
+      try {
+        final AppUser? firebaseUser =
+            (await BackendAPIAssistant.authenticateUserWithEmailAndPassword(
+                _model.emailAddressController2.text,
+                _model.passwordController2.text));
+
+        showDialog(
+            context: context,
+            builder: ((context) => AlertDialog(
+                  content: Text("Се најавувате. Ве молиме почекајте."),
+                )));
+
+        if (firebaseUser != null) {
+          if (firebaseUser.id.isNotEmpty) {
+
+           
+            Fluttertoast.showToast(msg: "Успешно се најавивте!");
+            context.go("/home");
+          }
+        }
+        else {
+                      Fluttertoast.showToast(
+                msg:
+                    "Не постои корисник со такви информации. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
+        }
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'user-not-found') {
+          Fluttertoast.showToast(
+              msg:
+                  "Не постои корисник со такви информации. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
+        } else if (e.code == 'wrong-password') {
+          Fluttertoast.showToast(
+              msg:
+                  "Погрешна лозинка. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
+        }
+      }
+    }
+  }
+
+  void registerNewUserWithBackend(BuildContext context) async {
+    if (validateFields(context)) {
+      // final User? firebaseUser = (await _firebaseAuth
+      //         .createUserWithEmailAndPassword(
+      //             email: _model.emailAddressController1.text,
+      //             password: _model.passwordController1.text)
+      //         .catchError((errMsg) {
+      //   Fluttertoast.showToast(msg: "Настана грешка: " + errMsg);
+      // }))
+      //     .user;
+
+        Map userDataObj = {
+          "name": _model.nameController.text,
+          "email": _model.emailAddressController1.text,
+          "phone": _model.phoneNumberController.text,
+          "role": "regular_user",
+          "password": _model.passwordController1.text
+        };
+
+        final AppUser? firebaseUser = await BackendAPIAssistant.registerNewUserWithObj(userDataObj);
+
+      showDialog(
+          context: context,
+          builder: ((context) => AlertDialog(
+                content: Text("Се регистрирате. Ве молиме почекајте."),
+              )));
+      if (firebaseUser == null) {
+        Fluttertoast.showToast(
+            msg:
+                "Настана грешка при креирањето на акаунтот. Ве молиме обидете се повторно.");
+      } else {
+        //usersRef.child(firebaseUser.uid).set(userDataObj);
+        Fluttertoast.showToast(msg: "Вашиот акаунт е успешно креиран!");
+        context.go("/login");
       }
     }
   }

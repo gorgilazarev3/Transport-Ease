@@ -1,3 +1,5 @@
+import 'package:transportease_providers/main.dart';
+
 import '../AssistantFunctions/methods_assistants.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';

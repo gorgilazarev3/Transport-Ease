@@ -29,4 +29,16 @@ class AppUser {
     }
     throw Exception("AppUser not found");
   }
+
+  factory AppUser.fromJSON(Map<String, dynamic> json) {
+    if (json.isNotEmpty) {
+        return AppUser(
+            id: json['id'],
+            email: json["email"],
+            name: json["name"],
+            phone: json["phone_number"],
+            role: json["role"]);
+    }
+    throw Exception("AppUser not found");
+  }
 }

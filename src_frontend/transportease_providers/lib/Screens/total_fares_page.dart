@@ -31,7 +31,8 @@ class _TotalFaresPageWidgetState extends State<TotalFaresPageWidget> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) => setState(() async {
           MethodsAssistants.clearTripHistory(context);
-          await MethodsAssistants.retrieveHistory(context);
+          // await MethodsAssistants.retrieveHistory(context);
+          await MethodsAssistants.retrieveHistoryFromBackend(context);
         }));
   }
 

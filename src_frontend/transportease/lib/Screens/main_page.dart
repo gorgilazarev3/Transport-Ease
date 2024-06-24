@@ -16,6 +16,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_flutter_platform_interface/src/types/location.dart'
     as MapsLocation;
 import 'package:provider/provider.dart';
+import 'package:transportease/AssistantFunctions/backend_api_assistant.dart';
 import 'package:transportease/AssistantFunctions/methods_assistants.dart';
 import 'package:transportease/Models/address.dart';
 import 'package:transportease/Screens/rating_dialog.dart';
@@ -76,7 +77,7 @@ class _MainPageWidgetState extends State<MainPageWidget>
   bool permissionsGranted = false;
 
   bool get getSearchDestShown => searchDestShown;
-  int driverRequestTimeout = 60;
+  int driverRequestTimeout = 300;
   String state = "normal";
   StreamSubscription<DatabaseEvent>? rideStreamSub;
   String? statusRide;
@@ -97,6 +98,8 @@ class _MainPageWidgetState extends State<MainPageWidget>
   List<NearbyAvailableDriver> availableDrivers = [];
 
   late StreamSubscription<List<DocumentSnapshot>> streamSub;
+
+  int mostRecentRideRequestId = -1;
 
   @override
   void initState() {
@@ -220,15 +223,212 @@ class _MainPageWidgetState extends State<MainPageWidget>
               context: context,
             );
             if (res_rating == "rated") {
-              rideRequestRef.onDisconnect();
-              rideStreamSub!.cancel();
-              rideStreamSub = null;
+              // rideRequestRef.onDisconnect();
+              // rideStreamSub!.cancel();
+              // rideStreamSub = null;
               resetTrip();
             }
           }
         }
       }
     });
+  }
+
+    Future<void> saveRideRequestToBackend() async {
+
+
+    var pickUp = Provider.of<AppData>(context, listen: false).pickUpLocation;
+    var destination =
+        Provider.of<AppData>(context, listen: false).dropOffLocation;
+
+    var userProfile =
+        Provider.of<AppData>(context, listen: false).loggedInUserProfile;
+
+    Map pickupObj = {
+      "latitude": pickUp!.latitude.toString(),
+      "longitude": pickUp!.longitude.toString()
+    };
+
+    Map destObj = {
+      "latitude": destination!.latitude.toString(),
+      "longitude": destination!.longitude.toString()
+    };
+
+    Map rideInfoObj = {
+      "driver_id": "waiting",
+      "payment_method": "cash",
+      "pickup_location_latitude": pickupObj['latitude'],
+      "pickup_location_longitude": pickupObj['longitude'],
+      "destination_location_latitude": destObj['latitude'],
+      "destination_location_longitude": destObj['longitude'],
+      "rider_name": userProfile!.name,
+      "rider_phone": userProfile!.phone,
+      "pickup_address": pickUp.placeFormattedAddress,
+      "destination_address": destination.placeFormattedAddress,
+      "pickup_place": pickUp.placeName,
+      "destination_place": destination.placeName,
+      "ride_type": rideType
+    };
+
+    Map createdRideRequest = await BackendAPIAssistant.createARideRequest(rideInfoObj);
+    setState(() {
+      mostRecentRideRequestId = createdRideRequest['id'];
+    });
+
+    // rideRequestRef.set(rideInfoObj);
+    int maxWait = 300;
+    const oneSecPassed = Duration(seconds: 10);
+    var timer = Timer.periodic(oneSecPassed, (timer) async {
+
+      Map data = await BackendAPIAssistant.getRideRequest(mostRecentRideRequestId);
+      if (data == null) {
+        return;
+      }
+      if (data["status"] != null) {
+        statusRide = data["status"].toString();
+      }
+      if (data["car_details"] != null) {
+        carDetails = data["car_details"].toString();
+      }
+      if (data["driver_name"] != null) {
+        driverName = data["driver_name"].toString();
+      }
+      if (data["driver_phone"] != null) {
+        driverPhone = data["driver_phone"].toString();
+      }
+      if (data["driver_location"] != null) {
+        double driverLat =
+            double.parse(data["driver_location"]["coordinates"][0].toString());
+        double driverLng =
+            double.parse(data["driver_location"]["coordinates"][1].toString());
+        MapsLocation.LatLng driverPosition =
+            MapsLocation.LatLng(driverLat, driverLng);
+        if (statusRide == "accepted") {
+          updateRideDurationToPickupLocation(driverPosition);
+        } else if (statusRide == "in_progress") {
+          updateRideDurationToDestination(driverPosition);
+        }
+      }
+      if (data["car_plates"] != null) {
+        carPlates = data["car_plates"].toString();
+      }
+      if (statusRide == "accepted") {
+        displayAcceptedRequestDriverInfo();
+        Geofire.stopListener();
+        deleteGeofireMarkers();
+      }
+      String driverId = "";
+      if (statusRide == "finished") {
+        if (data["fare"] != null) {
+          int fare = int.parse(data["fare"].toString());
+          timer.cancel();
+          var res = await showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => FareDialogWidget(
+              paymentMethod: "cash",
+              fareAmount: fare,
+              payFare: payFare,
+            ),
+          );
+          if (data["driver_id"] != null) {
+            driverId = data["driver_id"].toString();
+          }
+          if (res == "paid" && farePaid) {
+            var res_rating = await showDialog(
+              builder: (context) => RatingDialogWidget(
+                driverId: driverId,
+              ),
+              context: context,
+            );
+            if (res_rating == "rated") {
+              // rideRequestRef.onDisconnect();
+              // rideStreamSub!.cancel();
+              // rideStreamSub = null;
+              resetTrip();
+            }
+          }
+        }
+      }
+      maxWait = maxWait - 10;
+      if (maxWait == 0) {
+        maxWait = 300;
+        timer.cancel();
+        cancelRide();
+      }
+    });
+
+    // rideStreamSub = rideRequestRef.onValue.listen((event) async {
+      // if (event.snapshot.value == null) {
+      //   return;
+      // }
+      // var data = event.snapshot.value as Map;
+      // if (data["status"] != null) {
+      //   statusRide = data["status"].toString();
+      // }
+      // if (data["car_details"] != null) {
+      //   carDetails = data["car_details"].toString();
+      // }
+      // if (data["driver_name"] != null) {
+      //   driverName = data["driver_name"].toString();
+      // }
+      // if (data["driver_phone"] != null) {
+      //   driverPhone = data["driver_phone"].toString();
+      // }
+      // if (data["driver_location"] != null) {
+      //   double driverLat =
+      //       double.parse(data["driver_location"]["latitude"].toString());
+      //   double driverLng =
+      //       double.parse(data["driver_location"]["longitude"].toString());
+      //   MapsLocation.LatLng driverPosition =
+      //       MapsLocation.LatLng(driverLat, driverLng);
+      //   if (statusRide == "accepted") {
+      //     updateRideDurationToPickupLocation(driverPosition);
+      //   } else if (statusRide == "in_progress") {
+      //     updateRideDurationToDestination(driverPosition);
+      //   }
+      // }
+      // if (data["car_plates"] != null) {
+      //   carPlates = data["car_plates"].toString();
+      // }
+      // if (statusRide == "accepted") {
+      //   displayAcceptedRequestDriverInfo();
+      //   Geofire.stopListener();
+      //   deleteGeofireMarkers();
+      // }
+      // String driverId = "";
+      // if (statusRide == "finished") {
+      //   if (data["fare"] != null) {
+      //     int fare = int.parse(data["fare"].toString());
+      //     var res = await showDialog(
+      //       context: context,
+      //       barrierDismissible: false,
+      //       builder: (context) => FareDialogWidget(
+      //         paymentMethod: "cash",
+      //         fareAmount: fare,
+      //         payFare: payFare,
+      //       ),
+      //     );
+      //     if (data["driver_id"] != null) {
+      //       driverId = data["driver_id"].toString();
+      //     }
+      //     if (res == "paid" && farePaid) {
+      //       var res_rating = await showDialog(
+      //         builder: (context) => RatingDialogWidget(
+      //           driverId: driverId,
+      //         ),
+      //         context: context,
+      //       );
+      //       if (res_rating == "rated") {
+      //         rideRequestRef.onDisconnect();
+      //         rideStreamSub!.cancel();
+      //         rideStreamSub = null;
+      //         resetTrip();
+      //       }
+      //     }
+      //   }
+      // }
+    // });
   }
 
   void deleteGeofireMarkers() {
@@ -287,22 +487,37 @@ class _MainPageWidgetState extends State<MainPageWidget>
     updateAvailableDriverList();
   }
 
+  Future<void> cancelRideRequestFromBackend() async {
+    // rideRequestRef.remove();
+    if(mostRecentRideRequestId != -1) {
+      await BackendAPIAssistant.cancelRideRequest(mostRecentRideRequestId);
+      setState(() {
+        state = "normal";
+      });
+      updateAvailableDriverList();
+    }
+  }
+
   Future<void> requestRide() async {
     setState(() {
       requestedRide = true;
       state = "requesting";
     });
 
-    saveRideRequest();
+    await saveRideRequestToBackend();
     updateAvailableDriverList();
     searchNearestDriver();
+    // saveRideRequest();
+    // updateAvailableDriverList();
+    // searchNearestDriver();
   }
 
   Future<void> cancelRide() async {
     setState(() {
       requestedRide = false;
     });
-    cancelRideRequest();
+    //cancelRideRequest();
+    await cancelRideRequestFromBackend();
   }
 
   void displayAcceptedRequestDriverInfo() {
@@ -328,7 +543,8 @@ class _MainPageWidgetState extends State<MainPageWidget>
   }
 
   void locatePosition() async {
-    MethodsAssistants.getLoggedInUser(context);
+    //MethodsAssistants.getLoggedInUser(context);
+    MethodsAssistants.getLoggedInUserFromBackend(context);
     LocationPermission permission;
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
@@ -375,7 +591,8 @@ class _MainPageWidgetState extends State<MainPageWidget>
       requestedRide = false;
     });
     initGeoFireListener();
-    updateAvailableDriversOnMap();
+    // updateAvailableDriversOnMap();
+    updateAvailableDriversOnMapFromBackend();
   }
 
   @override
@@ -1372,13 +1589,15 @@ class _MainPageWidgetState extends State<MainPageWidget>
                 longitude: map['longitude']);
             GeofireAssistant.nearbyAvailableDrivers.add(nearbyAvailableDriver);
             if (nearbyDriversLoaded) {
-              updateAvailableDriversOnMap();
+              // updateAvailableDriversOnMap();
+              updateAvailableDriversOnMapFromBackend();
             }
             break;
 
           case Geofire.onKeyExited:
             GeofireAssistant.removeDriverFromList(map['key']);
-            updateAvailableDriversOnMap();
+            // updateAvailableDriversOnMap();
+            updateAvailableDriversOnMapFromBackend();
             break;
 
           case Geofire.onKeyMoved:
@@ -1389,12 +1608,14 @@ class _MainPageWidgetState extends State<MainPageWidget>
                 longitude: map['longitude']);
             GeofireAssistant.updateSpecificDriverNearbyLocation(
                 nearbyAvailableDriver);
-            updateAvailableDriversOnMap();
+            // updateAvailableDriversOnMap();
+            updateAvailableDriversOnMapFromBackend();
             break;
 
           case Geofire.onGeoQueryReady:
             // All Intial Data is loaded
-            updateAvailableDriversOnMap();
+            // updateAvailableDriversOnMap();
+            updateAvailableDriversOnMapFromBackend();
             break;
         }
       }
@@ -1417,7 +1638,8 @@ class _MainPageWidgetState extends State<MainPageWidget>
               latitude: point.latitude,
               longitude: point.longitude);
           GeofireAssistant.nearbyAvailableDrivers.add(nearbyAvailableDriver);
-          updateAvailableDriversOnMap();
+          // updateAvailableDriversOnMap();
+          updateAvailableDriversOnMapFromBackend();
           setState(() {});
         });
       });
@@ -1488,6 +1710,71 @@ class _MainPageWidgetState extends State<MainPageWidget>
     });
   }
 
+    void updateAvailableDriversOnMapFromBackend() async {
+    setState(() {
+      markersSet.clear();
+    });
+
+    Set<Marker> nearbyDriversMarkers = Set<Marker>();
+    for (NearbyAvailableDriver driver
+        in GeofireAssistant.nearbyAvailableDrivers) {
+      ImageConfiguration imageConfiguration =
+          createLocalImageConfiguration(context, size: const Size(0.1, 0.1));
+      var icon = BitmapDescriptor.defaultMarker;
+      // DataSnapshot providerSnap = await providersRef.child(driver.key).get();
+      // var provider = providerSnap.value as Map?;
+      Map provider = await BackendAPIAssistant.getFullProviderInfoByUserId(driver.key);
+      if (provider != null) {
+        if (provider["role"].toString().toLowerCase() == "regular_driver") {
+          icon = await BitmapDescriptor.fromAssetImage(
+              imageConfiguration, "assets/images/regular_car_icon.png");
+        } else if (provider["role"].toString().toLowerCase() == "taxi_driver") {
+          icon = await BitmapDescriptor.fromAssetImage(
+              imageConfiguration, "assets/images/taxi_icon.png");
+        } else if (provider["role"].toString().toLowerCase() ==
+                "transporting_driver" &&
+            provider["provider_type"]
+                    .toString()
+                    .toLowerCase() ==
+                "passengers_provider") {
+          if (provider["routes_type"]
+                  .toString()
+                  .toLowerCase() ==
+              "local") {
+            icon = await BitmapDescriptor.fromAssetImage(
+                imageConfiguration, "assets/images/local_provider_icon.png");
+          } else if (provider["provider_details"]["routes_type"]
+                  .toString()
+                  .toLowerCase() ==
+              "international") {
+            icon = await BitmapDescriptor.fromAssetImage(imageConfiguration,
+                "assets/images/international_provider_icon.png");
+          }
+        } else if (provider["role"].toString().toLowerCase() ==
+                "transporting_driver" &&
+            provider["provider_type"]
+                    .toString()
+                    .toLowerCase() ==
+                "carrier_provider") {
+          icon = await BitmapDescriptor.fromAssetImage(
+              imageConfiguration, "assets/images/carrier_provider_icon.png");
+        }
+      }
+
+      MapsLocation.LatLng driverAvailablePos =
+          MapsLocation.LatLng(driver.latitude, driver.longitude);
+      Marker marker = Marker(
+          markerId: MarkerId("driver${driver.key}"),
+          position: driverAvailablePos,
+          icon: icon,
+          rotation: MethodsAssistants.randomNumber(360));
+      nearbyDriversMarkers.add(marker);
+    }
+    setState(() {
+      markersSet = nearbyDriversMarkers;
+    });
+  }
+
   Future<void> searchNearestDriver() async {
     if (availableDrivers.length == 0) {
       showDialog(
@@ -1496,27 +1783,36 @@ class _MainPageWidgetState extends State<MainPageWidget>
                 content: Text(
                     "Во моментот нема достапни превозници, Ве молиме почекајте."),
               )));
-      cancelRideRequest();
+      // cancelRideRequest();
+      await cancelRideRequestFromBackend();
       resetTrip();
       return;
     } else {
       var nearestDriver = availableDrivers[0];
-      var nearestDriverRideType =
-          await providersRef.child(nearestDriver.key).child("role").get();
-      if (nearestDriverRideType.value != null) {
-        String driverType = nearestDriverRideType.value.toString();
+      var snap =
+      await BackendAPIAssistant.getFullProviderInfoByUserId(nearestDriver.key);
+      var nearestDriverRideType = snap['role'];
+      // var nearestDriverRideType =
+      //     await providersRef.child(nearestDriver.key).child("role").get();
+      if (nearestDriverRideType != null) {
+        String driverType = nearestDriverRideType.toString();
         String compareType = rideType + "_driver";
         if (driverType == compareType) {
-          notifyDriver(nearestDriver);
+          // notifyDriver(nearestDriver);
+          notifyDriverInBackend(nearestDriver, snap['driver_id'].toString());
           availableDrivers.removeAt(0);
         } else {
-          showDialog(
-              context: context,
-              builder: ((context) => AlertDialog(
-                    content: Text(
-                        "Во моментот нема достапни превозници од бараниот тип. Ве молиме обидете се повторно или селектирајте друг тип на превозник."),
-                  )));
-          availableDrivers.removeAt(0);
+          if (availableDrivers.length == 0) {
+            showDialog(
+                context: context,
+                builder: ((context) => AlertDialog(
+                      content: Text(
+                          "Во моментот нема достапни превозници од бараниот тип. Ве молиме обидете се повторно или селектирајте друг тип на превозник."),
+                    )));
+          }
+          if (availableDrivers.length != 0) {
+            availableDrivers.removeAt(0);
+          }
           searchNearestDriver();
         }
       } else {
@@ -1547,7 +1843,7 @@ class _MainPageWidgetState extends State<MainPageWidget>
       if (state != "requesting") {
         providersRef.child(driver.key).child("newRide").set("cancelled");
         providersRef.child(driver.key).child("newRide").onDisconnect();
-        driverRequestTimeout = 60;
+        driverRequestTimeout = 300;
         timer.cancel();
       }
 
@@ -1555,14 +1851,68 @@ class _MainPageWidgetState extends State<MainPageWidget>
       providersRef.child(driver.key).child("newRide").onValue.listen((event) {
         if (event.snapshot.value.toString() == "accepted") {
           providersRef.child(driver.key).child("newRide").onDisconnect();
-          driverRequestTimeout = 60;
+          driverRequestTimeout = 300;
           timer.cancel();
         }
       });
       if (driverRequestTimeout == 0) {
         providersRef.child(driver.key).child("newRide").set("timeout");
         providersRef.child(driver.key).child("newRide").onDisconnect();
-        driverRequestTimeout = 60;
+        driverRequestTimeout = 300;
+        timer.cancel();
+
+        searchNearestDriver();
+      }
+    });
+  }
+
+    Future<void> notifyDriverInBackend(NearbyAvailableDriver driver, String driverId) async {
+    // providersRef.child(driver.key).child("newRide").set(rideRequestRef.key);
+    await BackendAPIAssistant.updateRideType(driverId, mostRecentRideRequestId);
+
+    Map? snap = await BackendAPIAssistant.getFullProviderInfoByUserId(driver.key);
+    if (snap != null) {
+      DocumentSnapshot tokenSnap =
+        await availableProvidersRef.doc(driver.key).get();
+      if(tokenSnap.exists) {
+        Map obj = tokenSnap.data() as Map;
+        String token = obj['token'];
+        MethodsAssistants.sendNotificationToDriver(
+            context, token, mostRecentRideRequestId.toString());
+      }
+    } else {
+      return;
+    }
+
+    const oneSecPassed = Duration(seconds: 10);
+    var timer = Timer.periodic(oneSecPassed, (timer) async {
+      if (state != "requesting") {
+        await BackendAPIAssistant.updateRideType(driver.key, "cancelled");
+
+        // providersRef.child(driver.key).child("newRide").set("cancelled");
+        // providersRef.child(driver.key).child("newRide").onDisconnect();
+        driverRequestTimeout = 300;
+        timer.cancel();
+      }
+
+      driverRequestTimeout = driverRequestTimeout - 10;
+      Map? provider = await BackendAPIAssistant.getFullProviderInfoByUserId(driver.key);
+      if(provider['newRide'] == "accepted") {
+          driverRequestTimeout = 300;
+          timer.cancel();
+      }
+      // providersRef.child(driver.key).child("newRide").onValue.listen((event) {
+      //   if (event.snapshot.value.toString() == "accepted") {
+      //     providersRef.child(driver.key).child("newRide").onDisconnect();
+      //     driverRequestTimeout = 300;
+      //     timer.cancel();
+      //   }
+      // });
+      if (driverRequestTimeout == 0) {
+        await BackendAPIAssistant.updateRideType(driver.key, "timeout");
+        // providersRef.child(driver.key).child("newRide").set("timeout");
+        // providersRef.child(driver.key).child("newRide").onDisconnect();
+        driverRequestTimeout = 300;
         timer.cancel();
 
         searchNearestDriver();

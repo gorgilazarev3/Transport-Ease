@@ -100,6 +100,11 @@ class UserController extends Controller
     $token = $user->createToken($user->name.'-AuthToken')->plainTextToken;
     return response()->json([
         'access_token' => $token,
+        'id' => $user->id,
+        'email' => $user->email,
+        'name' => $user->name,
+        'phone_number' => $user->phone_number,
+        'role' => $user->role,
     ]);
     }
 
@@ -109,5 +114,9 @@ class UserController extends Controller
     return response()->json([
         "message"=>"Successfully logged out"
     ]);
-}
+    }
+
+    public function getLoggedInUser(){
+        return auth()->user();
+    }
 }

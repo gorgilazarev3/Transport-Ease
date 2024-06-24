@@ -4,7 +4,11 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:transportease_providers/AssistantFunctions/backend_api_assistant.dart';
+import 'package:transportease_providers/DataHandler/app_data.dart';
+import 'package:transportease_providers/Models/app_user.dart';
 
 import '../Models/registration_model.dart';
 import '../flutter_flow/flutter_flow_animations.dart';
@@ -1075,7 +1079,7 @@ class _RegistrationPageWidgetState extends State<RegistrationPageWidget>
                                                           // context.goNamedAuth(
                                                           //     'LoginPage',
                                                           //     context.mounted);
-                                                          registerNewUser(
+                                                          registerNewDriverCustom(
                                                               context);
                                                         },
                                                         text: 'Следно',
@@ -1659,7 +1663,7 @@ class _RegistrationPageWidgetState extends State<RegistrationPageWidget>
                                                           // context.goNamedAuth(
                                                           //     'LoginPage',
                                                           //     context.mounted);
-                                                          authenticate(context);
+                                                          authenticateCustom(context);
                                                         },
                                                         text: 'Најава',
                                                         options:
@@ -2044,6 +2048,8 @@ class _RegistrationPageWidgetState extends State<RegistrationPageWidget>
     return result;
   }
 
+  
+
   void registerNewUser(BuildContext context) async {
     if (validateFields(context)) {
       final User? firebaseUser = (await _firebaseAuth
@@ -2179,4 +2185,94 @@ class _RegistrationPageWidgetState extends State<RegistrationPageWidget>
       }
     }
   }
+
+    void authenticateCustom(BuildContext context) async {
+    if (validateFields(context)) {
+      try {
+        final AppUser? firebaseUser =
+            (await BackendAPIAssistant.authenticateUserWithEmailAndPassword(
+                _model.emailAddressController2.text,
+                _model.passwordController2.text));
+
+        showDialog(
+            context: context,
+            builder: ((context) => AlertDialog(
+                  content: Text("Се најавувате. Ве молиме почекајте."),
+                )));
+
+        if (firebaseUser != null) {
+          if (firebaseUser.id.isNotEmpty) {
+            Fluttertoast.showToast(msg: "Успешно се најавивте!");
+            context.go("/home");
+          }
+        }
+        else {
+                      Fluttertoast.showToast(
+                msg:
+                    "Не постои корисник со такви информации. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
+        }
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'user-not-found') {
+          Fluttertoast.showToast(
+              msg:
+                  "Не постои корисник со такви информации. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
+        } else if (e.code == 'wrong-password') {
+          Fluttertoast.showToast(
+              msg:
+                  "Погрешна лозинка. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
+        }
+      }
+    }
+  }
+
+    void registerNewDriverCustom(BuildContext context) async {
+    if (validateFields(context)) {
+
+
+        String user_role = "regular_driver";
+        if (_model.radioButtonValue!.isNotEmpty &&
+            _model.radioButtonValue!.toLowerCase() == "самостојно") {
+          user_role = "regular_driver";
+        } else if (_model.radioButtonValue!.isNotEmpty &&
+            _model.radioButtonValue!.toLowerCase() == "такси") {
+          user_role = "taxi_driver";
+        } else if (_model.radioButtonValue!.isNotEmpty &&
+            _model.radioButtonValue!.toLowerCase() == "превозник") {
+          user_role = "transporting_driver";
+        }
+        Map userDataObj = {
+          "name": _model.nameController.text,
+          "email": _model.emailAddressController1.text,
+          "phone": _model.phoneNumberController.text,
+          "role": user_role,
+          "id": "ABC"
+        };
+
+      showDialog(
+          context: context,
+          builder: ((context) => AlertDialog(
+                content:
+                    Text("Се регистрирате во системот. Ве молиме почекајте."),
+              )));
+
+        final storage = FlutterSecureStorage();
+        await storage.write(key: 'enteredPassword', value: _model.passwordController1.text);
+        await storage.write(key: 'userEmail', value:  userDataObj['email']);
+        await storage.write(key: 'userName', value: userDataObj['name']);
+        await storage.write(key: 'userPhone', value: userDataObj['phone']);
+        await storage.write(key: 'userRole', value: userDataObj['role']);
+
+        Fluttertoast.showToast(
+            msg:
+                "Вашиот профил е креиран, ќе бидете пренасочени кон страницата за информации за превозник");
+        if (user_role == "regular_driver") {
+          context.go("/independentProvider");
+        } else if (user_role == "taxi_driver") {
+          context.go("/taxiProvider");
+        } else if (user_role == "transporting_driver") {
+          context.go("/transportingProvider");
+        }
+      }
+    }
+  
 }

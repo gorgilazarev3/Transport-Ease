@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ProviderDetails;
+use App\Services\ProviderDetailsService;
 use Illuminate\Http\Request;
 
 class ProviderDetailsController extends Controller
@@ -11,6 +12,14 @@ class ProviderDetailsController extends Controller
     /**
      * Display a listing of the resource.
      */
+
+    protected ProviderDetailsService $providerDetailsService;
+
+    public function __construct(ProviderDetailsService $providerDetailsService)
+    {
+        $this->providerDetailsService = $providerDetailsService;
+    }
+
     public function index()
     {
         //
@@ -62,5 +71,11 @@ class ProviderDetailsController extends Controller
     public function destroy(ProviderDetails $providerDetails)
     {
         //
+    }
+
+    public function getProviderDetailsForDriver(int $driverId)
+    {
+        //
+        return $this->providerDetailsService->getProviderDetailsForDriver($driverId);
     }
 }

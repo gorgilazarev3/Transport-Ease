@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:transportease_providers/AssistantFunctions/backend_api_assistant.dart';
+import 'package:transportease_providers/Models/app_user.dart';
 
 import '../main.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -330,7 +332,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                                       0.0, 0.0, 0.0, 16.0),
                                   child: FFButtonWidget(
                                     onPressed: () async {
-                                      authenticate(context);
+                                      authenticateCustom(context);
 
                                       // GoRouter.of(context).prepareAuthEvent();
 
@@ -667,6 +669,45 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
             Fluttertoast.showToast(msg: "Успешно се најавивте!");
             context.go("/home");
           }
+        }
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'user-not-found') {
+          Fluttertoast.showToast(
+              msg:
+                  "Не постои корисник со такви информации. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
+        } else if (e.code == 'wrong-password') {
+          Fluttertoast.showToast(
+              msg:
+                  "Погрешна лозинка. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
+        }
+      }
+    }
+  }
+
+    void authenticateCustom(BuildContext context) async {
+    if (validateFields(context)) {
+      try {
+        final AppUser? firebaseUser =
+            (await BackendAPIAssistant.authenticateUserWithEmailAndPassword(
+                _model.emailAddressController.text,
+                _model.passwordController.text));
+
+        showDialog(
+            context: context,
+            builder: ((context) => AlertDialog(
+                  content: Text("Се најавувате. Ве молиме почекајте."),
+                )));
+
+        if (firebaseUser != null) {
+          if (firebaseUser.id.isNotEmpty) {
+            Fluttertoast.showToast(msg: "Успешно се најавивте!");
+            context.go("/home");
+          }
+        }
+        else {
+                      Fluttertoast.showToast(
+                msg:
+                    "Не постои корисник со такви информации. Ве молиме проверете ги и обидете се повторно или регистрирајте се.");
         }
       } on FirebaseAuthException catch (e) {
         if (e.code == 'user-not-found') {

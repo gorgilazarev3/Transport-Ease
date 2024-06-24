@@ -1,6 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:transportease_providers/AssistantFunctions/backend_api_assistant.dart';
 import 'package:transportease_providers/AssistantFunctions/methods_assistants.dart';
 import 'package:transportease_providers/Screens/new_ride_request_page.dart';
 import 'package:transportease_providers/main.dart';
@@ -229,8 +230,9 @@ class _RideRequestNotificationWidgetState
                         Provider.of<AppData>(context, listen: false)
                             .audioPlayer
                             .stop();
-                        checkProviderAvailability();
-                        Navigator.pop(context);
+                        // checkProviderAvailability();
+                        checkProviderAvailabilityFromBackend();
+                        // Navigator.pop(context);
                       },
                       text: 'Прифати',
                       options: FFButtonOptions(
@@ -297,6 +299,52 @@ class _RideRequestNotificationWidgetState
                 builder: (context) => NewRidePageWidget(
                     rideDetails: rideDetails,
                     currentPosition: currentPosition)));
+      } else if (rideId == "cancelled") {
+        Fluttertoast.showToast(msg: "Барањето за превоз е откажано.");
+      } else if (rideId == "timeout") {
+        Fluttertoast.showToast(msg: "Времето за барањето за превоз истече.");
+      } else {
+        Fluttertoast.showToast(msg: "Не постои такво барање за превоз!");
+      }
+    }
+  }
+
+    void checkProviderAvailabilityFromBackend() async {
+    // DataSnapshot providerSnap = await rideRequestsRef.get();
+    Map providerSnap = await BackendAPIAssistant.getFullProviderInfo(Provider.of<AppData>(context, listen: false).driverInformation!.id);
+    String rideId = "";
+    if (providerSnap != null) {
+      var data = providerSnap;
+      if (data != null) {
+        rideId = data['newRide'].toString();
+      } else {
+        Fluttertoast.showToast(msg: "Не постои такво барање за превоз!");
+      }
+
+      if (rideId == rideDetails.rideRequestId) {
+        // rideRequestsRef.set("accepted");
+        Map driver = await BackendAPIAssistant.updateRideType(Provider.of<AppData>(context, listen: false).driverInformation!.id, "accepted");
+        if(driver != null) {
+                  Position currentPosition =
+            Provider.of<AppData>(context, listen: false).currentPosition ??
+                Position(
+                    longitude: rideDetails.pickUpLocation.longitude,
+                    latitude: rideDetails.pickUpLocation.latitude,
+                    timestamp: DateTime.now(),
+                    accuracy: 1,
+                    altitude: 1,
+                    heading: 1,
+                    speed: 1,
+                    speedAccuracy: 1);
+        MethodsAssistants.disableLiveLocationUpdatesOfProvider(context);
+        Navigator.pop(context);
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => NewRidePageWidget(
+                    rideDetails: rideDetails,
+                    currentPosition: currentPosition)));
+        }
       } else if (rideId == "cancelled") {
         Fluttertoast.showToast(msg: "Барањето за превоз е откажано.");
       } else if (rideId == "timeout") {

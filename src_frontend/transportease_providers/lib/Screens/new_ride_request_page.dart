@@ -8,7 +8,9 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as MapsLocation;
+import 'package:transportease_providers/AssistantFunctions/backend_api_assistant.dart';
 import 'package:transportease_providers/AssistantFunctions/maps_toolkit_assistant.dart';
+import 'package:transportease_providers/Models/app_user.dart';
 import 'package:transportease_providers/main.dart';
 import 'package:wtf_sliding_sheet/wtf_sliding_sheet.dart';
 import 'package:sensors_plus/sensors_plus.dart';
@@ -98,7 +100,9 @@ class _NewRidePageWidgetState extends State<NewRidePageWidget> {
 
     googleMapController
         .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
-    await createIconMarker();
+    // await createIconMarker();
+    await createIconMarkerFromBackend();
+
 
     // Address address = await MethodsAssistants.getAddressFromCoordinates(
     //     currentPosition, context);
@@ -155,6 +159,58 @@ class _NewRidePageWidgetState extends State<NewRidePageWidget> {
     }
   }
 
+    Future<void> createIconMarkerFromBackend() async {
+    if (animatingMarkerIcon == null) {
+      ImageConfiguration imageConfiguration =
+          createLocalImageConfiguration(context, size: const Size(0.1, 0.1));
+      var icon = BitmapDescriptor.defaultMarker;
+      // DataSnapshot providerSnap = await providersRef
+      //     .child(Provider.of<AppData>(context, listen: false).loggedInUser!.uid)
+      //     .get();
+      // var provider = providerSnap.value as Map?;
+      Map? provider = await BackendAPIAssistant.getFullProviderInfo(Provider.of<AppData>(context, listen: false).driverInformation!.id);
+      if (provider != null) {
+        if (provider["role"].toString().toLowerCase() == "regular_driver") {
+          icon = await BitmapDescriptor.fromAssetImage(
+              imageConfiguration, "assets/images/regular_car_icon.png");
+        } else if (provider["role"].toString().toLowerCase() == "taxi_driver") {
+          icon = await BitmapDescriptor.fromAssetImage(
+              imageConfiguration, "assets/images/taxi_icon.png");
+        } else if (provider["role"].toString().toLowerCase() ==
+                "transporting_driver" &&
+            provider["provider_type"]
+                    .toString()
+                    .toLowerCase() ==
+                "passengers_provider") {
+          if (provider["routes_type"]
+                  .toString()
+                  .toLowerCase() ==
+              "local") {
+            icon = await BitmapDescriptor.fromAssetImage(
+                imageConfiguration, "assets/images/local_provider_icon.png");
+          } else if (provider["routes_type"]
+                  .toString()
+                  .toLowerCase() ==
+              "international") {
+            icon = await BitmapDescriptor.fromAssetImage(imageConfiguration,
+                "assets/images/international_provider_icon.png");
+          }
+        } else if (provider["role"].toString().toLowerCase() ==
+                "transporting_driver" &&
+            provider["provider_type"]
+                    .toString()
+                    .toLowerCase() ==
+                "carrier_provider") {
+          icon = await BitmapDescriptor.fromAssetImage(
+              imageConfiguration, "assets/images/carrier_provider_icon.png");
+        }
+      }
+      setState(() {
+        animatingMarkerIcon = icon;
+      });
+    }
+  }
+
   void getRideLiveLocationUpdates() {
     MapsLocation.LatLng oldPos = MapsLocation.LatLng(0, 0);
 
@@ -192,10 +248,10 @@ class _NewRidePageWidgetState extends State<NewRidePageWidget> {
         "longitude": currentPosition.longitude.toString()
       };
 
-      newRideRequestsRef
-          .child(widget.rideDetails.rideRequestId)
-          .child("driver_location")
-          .set(location);
+      // newRideRequestsRef
+      //     .child(widget.rideDetails.rideRequestId)
+      //     .child("driver_location")
+      //     .set(location);
     });
 
     Provider.of<AppData>(context, listen: false).updateRideSub(rideStreamSub);
@@ -210,9 +266,9 @@ class _NewRidePageWidgetState extends State<NewRidePageWidget> {
     _model = createModel(context, () => NewRidePageModel());
 
     WidgetsBinding.instance.addPostFrameCallback((_) => setState(() {
-          setRideType();
+          setRideTypeFromBackend();
         }));
-    acceptRideRequest();
+    acceptRideRequestFromBackend();
   }
 
   @override
@@ -244,6 +300,22 @@ class _NewRidePageWidgetState extends State<NewRidePageWidget> {
     if (rideSnap.exists && rideSnap.value != null) {
       String valueType = rideSnap.value.toString();
       List<String> values = valueType.split("_");
+      setState(() {
+        rideType = values[0];
+      });
+      Provider.of<AppData>(context, listen: false).updateRideType(values[0]);
+    }
+  }
+
+    void setRideTypeFromBackend() async {
+    // DataSnapshot rideSnap = await providersRef
+    //     .child(Provider.of<AppData>(context, listen: false).loggedInUser!.uid)
+    //     .child("role")
+    //     .get();
+    AppUser user = Provider.of<AppData>(context, listen: false).loggedInUserProfile!;
+    if (user.role != null) {
+      // String valueType = rideSnap.value.toString();
+      List<String> values = user.role.split("_");
       setState(() {
         rideType = values[0];
       });
@@ -501,11 +573,12 @@ class _NewRidePageWidgetState extends State<NewRidePageWidget> {
                                             onPressed: () async {
                                               if (status == "accepted") {
                                                 status = "arrived";
-                                                newRideRequestsRef
-                                                    .child(widget.rideDetails
-                                                        .rideRequestId)
-                                                    .child("status")
-                                                    .set(status);
+                                                // newRideRequestsRef
+                                                //     .child(widget.rideDetails
+                                                //         .rideRequestId)
+                                                //     .child("status")
+                                                //     .set(status);
+                                                await BackendAPIAssistant.updateRideRequestStatus(widget.rideDetails.rideRequestId, status);
 
                                                 setState(() {
                                                   btnTitle =
@@ -533,11 +606,12 @@ class _NewRidePageWidgetState extends State<NewRidePageWidget> {
                                                 Navigator.pop(context);
                                               } else if (status == "arrived") {
                                                 status = "in_progress";
-                                                newRideRequestsRef
-                                                    .child(widget.rideDetails
-                                                        .rideRequestId)
-                                                    .child("status")
-                                                    .set(status);
+                                                await BackendAPIAssistant.updateRideRequestStatus(widget.rideDetails.rideRequestId, status);
+                                                // newRideRequestsRef
+                                                //     .child(widget.rideDetails
+                                                //         .rideRequestId)
+                                                //     .child("status")
+                                                //     .set(status);
 
                                                 setState(() {
                                                   btnTitle =
@@ -754,6 +828,65 @@ class _NewRidePageWidgetState extends State<NewRidePageWidget> {
         .set(location);
   }
 
+    Future<void> acceptRideRequestFromBackend() async {
+    String rideRequestId = widget.rideDetails.rideRequestId;
+    // newRideRequestsRef.child(rideRequestId).child("status").set("accepted");
+    Driver? availableDriver =
+        Provider.of<AppData>(context, listen: false).driverInformation;
+
+            Map location = {
+      "latitude": currentPosition.latitude.toString(),
+      "longitude": currentPosition.longitude.toString()
+    };
+
+      Map details = {
+        'driver_name' : availableDriver!.name,
+        'driver_phone' : availableDriver!.phone,
+        'driver_id' : availableDriver!.id,
+        'car_details' : "${availableDriver.car_color} ${availableDriver.car_model}",
+        'car_plates' : availableDriver!.license_plate,
+        'driver_location' : location
+      };
+
+      await BackendAPIAssistant.updateRideRequestDetails(rideRequestId, details);
+      await BackendAPIAssistant.updateRideRequestStatus(rideRequestId, "accepted");
+    // newRideRequestsRef
+    //     .child(rideRequestId)
+    //     .child("driver_name")
+    //     .set(availableDriver!.name);
+    // newRideRequestsRef
+    //     .child(rideRequestId)
+    //     .child("driver_phone")
+    //     .set(availableDriver!.phone);
+    // newRideRequestsRef
+    //     .child(rideRequestId)
+    //     .child("driver_id")
+    //     .set(availableDriver!.id);
+    // newRideRequestsRef
+    //     .child(rideRequestId)
+    //     .child("car_details")
+    //     .set("${availableDriver.car_color} ${availableDriver.car_model}");
+    // newRideRequestsRef
+    //     .child(rideRequestId)
+    //     .child("car_plates")
+    //     .set(availableDriver!.license_plate);
+
+
+
+    // newRideRequestsRef
+    //     .child(rideRequestId)
+    //     .child("driver_location")
+    //     .set(location);
+
+    // providersRef
+    //     .child(availableDriver.id)
+    //     .child("history")
+    //     .child(rideRequestId)
+    //     .set(true);
+
+
+  }
+
   void initTimer() {
     const interval = Duration(seconds: 1);
     timer = Timer.periodic(interval, (timer) {
@@ -782,14 +915,17 @@ class _NewRidePageWidgetState extends State<NewRidePageWidget> {
 
     status = "finished";
 
-    newRideRequestsRef
-        .child(widget.rideDetails.rideRequestId)
-        .child("fare")
-        .set(fareAmount.toString());
-    newRideRequestsRef
-        .child(widget.rideDetails.rideRequestId)
-        .child("status")
-        .set(status);
+    // newRideRequestsRef
+    //     .child(widget.rideDetails.rideRequestId)
+    //     .child("fare")
+    //     .set(fareAmount.toString());
+    await BackendAPIAssistant.updateRideRequestFare(widget.rideDetails.rideRequestId, fareAmount);
+    await BackendAPIAssistant.updateRideRequestStatus(widget.rideDetails.rideRequestId, status);
+
+    // newRideRequestsRef
+    //     .child(widget.rideDetails.rideRequestId)
+    //     .child("status")
+    //     .set(status);
 
     Provider.of<AppData>(context, listen: false).cancelRideSub();
 
@@ -800,7 +936,8 @@ class _NewRidePageWidgetState extends State<NewRidePageWidget> {
             fareAmount: fareAmount,
             paymentMethod: widget.rideDetails.paymentMethod));
 
-    saveEarnings(fareAmount);
+    //saveEarnings(fareAmount);
+    saveEarningsInBackend(fareAmount);
   }
 
   Future<void> updateRideDetails() async {
@@ -850,5 +987,9 @@ class _NewRidePageWidgetState extends State<NewRidePageWidget> {
           .child("earnings")
           .set(totalEarnings.toStringAsFixed(2));
     }
+  }
+
+    Future<void> saveEarningsInBackend(fareAmount) async {
+      await BackendAPIAssistant.saveEarnings(Provider.of<AppData>(context, listen: false).driverInformation!.id, fareAmount);
   }
 }

@@ -4,8 +4,10 @@ import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:transportease_providers/AssistantFunctions/backend_api_assistant.dart';
 import 'package:transportease_providers/DataHandler/app_data.dart';
 import 'package:transportease_providers/Models/ride_request_notification_model.dart';
 import 'package:transportease_providers/Screens/ride_request_notification_widget.dart';
@@ -29,7 +31,8 @@ class PushNotificationService {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('Got a message whilst in the foreground!');
       print('Message data: ${message.data}');
-      retrieveRideRequestInfo(getRideRequestId(message), context);
+      //retrieveRideRequestInfo(getRideRequestId(message), context);
+      retrieveRideRequestInfoFromBackend(getRideRequestId(message), context);
       if (message.notification != null) {
         print('Message also contained a notification: ${message.notification}');
       }
@@ -45,6 +48,22 @@ class PushNotificationService {
         .child(Provider.of<AppData>(context, listen: false).loggedInUser!.uid)
         .child("token")
         .set(token);
+    firebaseMessaging.subscribeToTopic("all_providers");
+    firebaseMessaging.subscribeToTopic("all_users");
+    return token;
+  }
+
+    Future<String> getTokenAndUpdateToBackend(BuildContext context) async {
+    String? token = await firebaseMessaging.getToken();
+    print("token is: " + token!);
+    final storage = FlutterSecureStorage();
+    await storage.write(key: 'token', value: token);
+    // providersRef
+    //     .child(Provider.of<AppData>(context, listen: false).loggedInUser!.uid)
+    //     .child("token")
+    //     .set(token);
+    String driverId = Provider.of<AppData>(context, listen: false).driverInformation!.id;
+    await BackendAPIAssistant.updateToken(driverId, token);
     firebaseMessaging.subscribeToTopic("all_providers");
     firebaseMessaging.subscribeToTopic("all_users");
     return token;
@@ -72,6 +91,50 @@ class PushNotificationService {
           double.parse(data["destinationLocation"]["latitude"].toString());
       double destLocationLng =
           double.parse(data["destinationLocation"]["longitude"].toString());
+
+      String paymentMethod = data["payment_method"].toString();
+      String riderName = data["rider_name"].toString();
+      String riderPhone = data["rider_phone"].toString();
+
+      RideDetails rideDetails = RideDetails(
+          rideRequestId: rideRequestId,
+          pickUpAddress: pickUpAddress,
+          destinationAddress: destAddress,
+          pickUpLocation: LatLng(pickUpLocationLat, pickUpLocationLng),
+          destinationLocation: LatLng(destLocationLat, destLocationLng),
+          paymentMethod: paymentMethod,
+          riderName: riderName,
+          riderPhone: riderPhone);
+
+      showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: ((context) =>
+              RideRequestNotificationWidget(rideDetails: rideDetails)));
+
+      Provider.of<AppData>(context, listen: false)
+          .audioPlayer
+          .open(Audio("assets/audios/notification.mp3"), autoStart: true);
+    }
+  }
+
+    Future<void> retrieveRideRequestInfoFromBackend(
+      String rideRequestId, BuildContext context) async {
+    // DataSnapshot snap = await newRideRequestsRef.child(rideRequestId).get();
+    Map data = await BackendAPIAssistant.getRideRequestById(rideRequestId);
+    if (data != null) {
+      // var data = snap.value as Map;
+      double pickUpLocationLat =
+          double.parse(data["pickup_location"]["coordinates"][0].toString());
+      double pickUpLocationLng =
+          double.parse(data["pickup_location"]["coordinates"][1].toString());
+      String pickUpAddress = data["pickup_address"].toString();
+
+      String destAddress = data["destination_address"].toString();
+      double destLocationLat =
+          double.parse(data["destination_location"]["coordinates"][0].toString());
+      double destLocationLng =
+          double.parse(data["destination_location"]["coordinates"][1].toString());
 
       String paymentMethod = data["payment_method"].toString();
       String riderName = data["rider_name"].toString();

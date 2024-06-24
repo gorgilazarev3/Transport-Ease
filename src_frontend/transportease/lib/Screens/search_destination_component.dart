@@ -354,7 +354,7 @@ class _SearchDestinationWidgetState extends State<SearchDestinationWidget> {
     String url =
         "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${placeName}&key=${ConfigMap.browserMapsKey}&sessionToken=1234567890&components=country:mk";
 
-    var response = await HttpAssistant.getRequestWithCorsProxy(url);
+    var response = await HttpAssistant.getPlacesApiFromBackend(placeName);
     if (response.statusCode == 200) {
       var json = response.body;
       var jsonObj = jsonDecode(json);

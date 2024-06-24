@@ -1,4 +1,5 @@
 import 'package:firebase_database/firebase_database.dart';
+import 'package:transportease/AssistantFunctions/backend_api_assistant.dart';
 
 import '../AssistantFunctions/methods_assistants.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -164,23 +165,30 @@ class _RatingDialogWidgetState extends State<RatingDialogWidget> {
                     children: [
                       GestureDetector(
                         onTap: () async {
-                          DatabaseReference ratingsRef = FirebaseDatabase
-                              .instance
-                              .ref()
-                              .child("providers")
-                              .child(widget.driverId)
-                              .child("ratings");
-                          var snap = await ratingsRef.get();
-                          if (snap.value != null) {
-                            double oldRating =
-                                double.parse(snap.value.toString());
-                            double avg = oldRating + starCount;
+                          // DatabaseReference ratingsRef = FirebaseDatabase
+                          //     .instance
+                          //     .ref()
+                          //     .child("providers")
+                          //     .child(widget.driverId)
+                          //     .child("ratings");
+                          // var snap = await ratingsRef.get();
+                          // if (snap.value != null) {
+                            // double oldRating =
+                            //     double.parse(snap.value.toString());
+                            // double avg = oldRating + starCount;
+                            // avg /= 2;
+                            // ratingsRef.set(avg.toString());
+                          // } else {
+                          //   ratingsRef.set(starCount.toString());
+                          // }
+                          Map snap = await BackendAPIAssistant.getFullProviderInfo(widget.driverId);
+                          double oldRating = double.parse(snap['ratings'].toString());
+                          double avg = oldRating + starCount;
+                          if(oldRating != 0) {
                             avg /= 2;
-                            ratingsRef.set(avg.toString());
-                          } else {
-                            ratingsRef.set(starCount.toString());
                           }
 
+                          BackendAPIAssistant.updateDriverRating(widget.driverId, avg);
                           Navigator.pop(context, "rated");
                         },
                         child: Align(

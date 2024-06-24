@@ -1,16 +1,20 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geoflutterfire2/geoflutterfire2.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as MapsLocation;
+import 'package:transportease_providers/AssistantFunctions/backend_api_assistant.dart';
 import 'package:transportease_providers/DataHandler/app_data.dart';
+import 'package:transportease_providers/Models/app_user.dart';
 import 'package:transportease_providers/Models/driver.dart';
 import 'package:transportease_providers/Notifications/push_notification_service.dart';
 import 'package:transportease_providers/Screens/providers_account_page.dart';
@@ -56,6 +60,7 @@ class _ProviderMainPageWidgetState extends State<ProviderMainPageWidget> {
   late GoogleMapController googleMapController;
   void locatePosition() async {
     //MethodsAssistants.getLoggedInUser(context);
+    MethodsAssistants.getLoggedInUserFromBackend(context);
     LocationPermission permission;
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
@@ -116,8 +121,36 @@ class _ProviderMainPageWidgetState extends State<ProviderMainPageWidget> {
     MethodsAssistants.retrieveHistory(context);
   }
 
+    Future<void> getCurrentProviderInfoFromBackend() async {
+
+      AppUser loggedInUser = await BackendAPIAssistant.getLoggedInUser();
+      Provider.of<AppData>(context, listen: false).updateAppUser(loggedInUser);
+
+        
+    if (loggedInUser.role.isNotEmpty) {
+      List<String> values = loggedInUser.role.split("_");
+      Provider.of<AppData>(context, listen: false).updateRideType(values[0]);
+    }
+    Driver driver = await BackendAPIAssistant.getLoggedInDriver();
+    Provider.of<AppData>(context, listen: false).updateDriverInfo(driver);
+    // DataSnapshot driverSnap = await providersRef
+    //     .child(Provider.of<AppData>(context, listen: false).loggedInUser!.uid)
+    //     .get();
+    // Driver driver = Driver.fromSnapshot(
+    //     driverSnap, Provider.of<AppData>(context, listen: false).rideType);
+    // Provider.of<AppData>(context, listen: false).updateDriverInfo(driver);
+
+    PushNotificationService pushNotificationService = PushNotificationService();
+    pushNotificationService.initialize(context);
+    // pushNotificationService.getToken(context);
+    pushNotificationService.getTokenAndUpdateToBackend(context);
+    MethodsAssistants.retrieveHistoryFromBackend(context);
+    // MethodsAssistants.retrieveHistory(context);
+  }
+
   Future<void> initializeProviderInfo() async {
-    await getCurrentProviderInfo();
+    //await getCurrentProviderInfo();
+    await getCurrentProviderInfoFromBackend();
   }
 
   @override
@@ -183,7 +216,8 @@ class _ProviderMainPageWidgetState extends State<ProviderMainPageWidget> {
                   alignment: AlignmentDirectional(0, 0),
                   child: FFButtonWidget(
                     onPressed: () {
-                      changeProviderStatus();
+                      // changeProviderStatus();
+                      changeProviderStatusInBackend();
                       if (isProviderAvailable) {
                         updateLiveLocation();
                       }
@@ -246,7 +280,7 @@ class _ProviderMainPageWidgetState extends State<ProviderMainPageWidget> {
           .doc(Provider.of<AppData>(context, listen: false).loggedInUser!.uid)
           .set({
         'name': Provider.of<AppData>(context, listen: false).loggedInUser!.uid,
-        'position': myLocation.data
+        'position': myLocation.data,
       });
 
       rideRequestsRef.set("searching");
@@ -269,24 +303,85 @@ class _ProviderMainPageWidgetState extends State<ProviderMainPageWidget> {
     });
   }
 
+    void changeProviderStatusInBackend() async {
+    if (!isProviderAvailable) {
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+          forceAndroidLocationManager: true);
+      currentPosition = position;
+      Geofire.initialize("availableProviders");
+      GeoFirePoint myLocation = geo.point(
+          latitude: currentPosition.latitude,
+          longitude: currentPosition.longitude);
+      String userId = Provider.of<AppData>(context, listen: false).loggedInUserProfile!.id;
+
+      Geofire.setLocation(
+          userId,
+          currentPosition.latitude,
+          currentPosition.longitude);
+
+      DocumentReference avRef =  availableProvidersRef.doc(userId);
+            final storage = FlutterSecureStorage();
+      String? token = await storage.read(key: 'token');
+      await avRef.set({
+        'name': userId,
+        'position': myLocation.data,
+        'token' : token
+      }).catchError((err) => print(err));
+      // await availableProvidersRef
+      //     .doc(userId)
+      //     .set({
+      //   'name': userId,
+      //   'position': myLocation.data
+      // });
+      await BackendAPIAssistant.updateRideType(Provider.of<AppData>(context, listen: false).driverInformation!.id, "searching");
+      // rideRequestsRef.set("searching");
+      // rideRequestsRef.onValue.listen((event) {});
+      Fluttertoast.showToast(msg: "Го променивте вашиот статус во достапен.");
+    } else {
+      Geofire.removeLocation(
+          Provider.of<AppData>(context, listen: false).loggedInUserProfile!.id);
+
+      availableProvidersRef
+          .doc(Provider.of<AppData>(context, listen: false).loggedInUserProfile!.id)
+          .delete();
+      // rideRequestsRef.onDisconnect();
+      // rideRequestsRef.remove();
+      await BackendAPIAssistant.updateRideType(Provider.of<AppData>(context, listen: false).driverInformation!.id, "toNull");
+
+      Fluttertoast.showToast(msg: "Го променивте вашиот статус во недостапен.");
+    }
+
+    setState(() {
+      isProviderAvailable = !isProviderAvailable;
+    });
+  }
+
   void updateLiveLocation() {
     StreamSubscription<Position> mainPageSub =
-        Geolocator.getPositionStream().listen((Position position) {
+        Geolocator.getPositionStream().listen((Position position) async {
       currentPosition = position;
       if (isProviderAvailable) {
         GeoFirePoint myLocation = geo.point(
             latitude: position.latitude, longitude: position.longitude);
         Geofire.setLocation(
-            Provider.of<AppData>(context, listen: false).loggedInUser!.uid,
+            //Provider.of<AppData>(context, listen: false).loggedInUser!.uid,
+            Provider.of<AppData>(context, listen: false).loggedInUserProfile!.id,
             position.latitude,
             position.longitude);
 
+
+        final storage = FlutterSecureStorage();
+        String? token = await storage.read(key: 'token');
         availableProvidersRef
-            .doc(Provider.of<AppData>(context, listen: false).loggedInUser!.uid)
+            // .doc(Provider.of<AppData>(context, listen: false).loggedInUser!.uid)
+            .doc(Provider.of<AppData>(context, listen: false).loggedInUserProfile!.id)
             .set({
           'name':
-              Provider.of<AppData>(context, listen: false).loggedInUser!.uid,
-          'position': myLocation.data
+              // Provider.of<AppData>(context, listen: false).loggedInUser!.uid,
+              Provider.of<AppData>(context, listen: false).loggedInUserProfile!.id,
+          'position': myLocation.data,
+          'token': token
         });
       }
 

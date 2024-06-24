@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geoflutterfire2/geoflutterfire2.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -19,6 +20,7 @@ import 'package:transportease_providers/Models/direction_details.dart';
 import 'package:transportease_providers/Models/trip_history.dart';
 import 'package:transportease_providers/config_maps.dart' as ConfigMap;
 import 'package:transportease_providers/main.dart';
+import 'package:transportease_providers/AssistantFunctions/backend_api_assistant.dart';
 
 import '../config_maps.dart';
 
@@ -158,17 +160,28 @@ class MethodsAssistants {
 
   static void disableLiveLocationUpdatesOfProvider(BuildContext context) {
     Provider.of<AppData>(context, listen: false).pauseMainPageSub();
-    Geofire.removeLocation(
-        Provider.of<AppData>(context, listen: false).loggedInUser!.uid);
+    // Geofire.removeLocation(
+    //     Provider.of<AppData>(context, listen: false).loggedInUser!.uid);
+    // availableProvidersRef
+    //     .doc(Provider.of<AppData>(context, listen: false).loggedInUser!.uid)
+    //     .delete();
+        Geofire.removeLocation(
+        Provider.of<AppData>(context, listen: false).loggedInUserProfile!.id);
     availableProvidersRef
-        .doc(Provider.of<AppData>(context, listen: false).loggedInUser!.uid)
+        .doc(Provider.of<AppData>(context, listen: false).loggedInUserProfile!.id)
         .delete();
   }
 
-  static void enableLiveLocationUpdatesOfProvider(BuildContext context) {
+  static Future<void> enableLiveLocationUpdatesOfProvider(BuildContext context) async {
     Provider.of<AppData>(context, listen: false).resumeMainPageSub();
-    Geofire.setLocation(
-        Provider.of<AppData>(context, listen: false).loggedInUser!.uid,
+    // Geofire.setLocation(
+    //     Provider.of<AppData>(context, listen: false).loggedInUser!.uid,
+    //     Provider.of<AppData>(context, listen: false).currentPosition!.latitude,
+    //     Provider.of<AppData>(context, listen: false)
+    //         .currentPosition!
+    //         .longitude);
+        Geofire.setLocation(
+        Provider.of<AppData>(context, listen: false).loggedInUserProfile!.id,
         Provider.of<AppData>(context, listen: false).currentPosition!.latitude,
         Provider.of<AppData>(context, listen: false)
             .currentPosition!
@@ -181,11 +194,22 @@ class MethodsAssistants {
         longitude: Provider.of<AppData>(context, listen: false)
             .currentPosition!
             .longitude);
-    availableProvidersRef
-        .doc(Provider.of<AppData>(context, listen: false).loggedInUser!.uid)
+
+    final storage = FlutterSecureStorage();
+    String? token = await storage.read(key: 'token');
+    // availableProvidersRef
+    //     .doc(Provider.of<AppData>(context, listen: false).loggedInUser!.uid)
+    //     .set({
+    //   'name': Provider.of<AppData>(context, listen: false).loggedInUser!.uid,
+    //   'position': myLocation.data,
+    //   'token': token
+    // });
+        availableProvidersRef
+        .doc(Provider.of<AppData>(context, listen: false).loggedInUserProfile!.id)
         .set({
-      'name': Provider.of<AppData>(context, listen: false).loggedInUser!.uid,
-      'position': myLocation.data
+      'name': Provider.of<AppData>(context, listen: false).loggedInUserProfile!.id,
+      'position': myLocation.data,
+      'token': token
     });
   }
 
@@ -281,4 +305,110 @@ class MethodsAssistants {
         "${DateFormat.MMMd().format(dateTime)}, ${DateFormat.y().format(dateTime)} - ${DateFormat.jm().format(dateTime)}";
     return formattedDate;
   }
-}
+
+    static void getLoggedInUserFromBackend(BuildContext context) async {
+    //var firebaseUser = FirebaseAuth.instance.currentUser;
+    // String userId = firebaseUser!.uid;
+    // Provider.of<AppData>(context, listen: false)
+    //     .updateFirebaseUser(firebaseUser);
+
+    // DatabaseReference databaseReference =
+    //     FirebaseDatabase.instance.ref().child("users").child(userId);
+
+    // databaseReference.once().then((DataSnapshot snapshot) {
+    //       if (snapshot.value != null) {
+    //         AppUser user = AppUser.fromSnapshot(snapshot);
+    //         Provider.of<AppData>(context).updateAppUser(user);
+    //       }
+    //     } as FutureOr Function(DatabaseEvent value));
+
+    // DataSnapshot snapshot = await databaseReference.get();
+    // if (snapshot.exists) {
+    //   AppUser user = AppUser.fromSnapshot(snapshot);
+    //   Provider.of<AppData>(context, listen: false).updateAppUser(user);
+    // }
+    AppUser user = await BackendAPIAssistant.getLoggedInUser();
+    Provider.of<AppData>(context, listen: false).updateAppUser(user);
+  }
+
+    static Future<void> retrieveHistoryFromBackend(BuildContext context) async {
+    //retrieving and updating earnings of provider
+    // var earningsSnap = await providersRef
+    //     .child(Provider.of<AppData>(context, listen: false).loggedInUser!.uid)
+    //     .child("earnings")
+    //     .get();
+    Map provider = await BackendAPIAssistant.getFullProviderInfoByUserId(Provider.of<AppData>(context, listen: false).loggedInUserProfile!.id);
+    if (provider != null) {
+      String earnings = provider['earnings'].toString();
+      Provider.of<AppData>(context, listen: false).updateEarnings(earnings);
+    }
+    //retrieving and updating trip history
+    // var historySnap = await providersRef
+    //     .child(Provider.of<AppData>(context, listen: false).loggedInUser!.uid)
+    //     .child("history")
+    //     .get();
+    // if (historySnap.value != null) {
+    //   Map<dynamic, dynamic> keys = historySnap.value as Map;
+      // int numTrips = keys.length;
+      // Provider.of<AppData>(context, listen: false).updateNumTrips(numTrips);
+
+    //   List<String> tripHistoryKeys = [];
+    //   keys.forEach((key, value) {
+    //     tripHistoryKeys.add(key);
+    //   });
+
+    //   Provider.of<AppData>(context, listen: false)
+    //       .updateTripHistoryKeys(tripHistoryKeys);
+    //   obtainTripHistoryData(context);
+        List rideRequests = await BackendAPIAssistant.getRideRequestsForDriver(Provider.of<AppData>(context, listen: false).driverInformation!.id);
+        //var tripHistory = TripHistory.fromSnapshot(rideSnap);
+        rideRequests.forEach((element) {
+          element = element as Map;
+          var tripHistory = TripHistory(paymentMethod: element['payment_method'], createdOn: element['created_at'], status: element['status'], fare: element['fare'].toString(), destination: element['destination_address'], pickup: element['pickup_address']);
+          Provider.of<AppData>(context, listen: false)
+            .addTripHistoryData(tripHistory);
+        });
+      int numTrips = rideRequests.length;
+      Provider.of<AppData>(context, listen: false).updateNumTrips(numTrips);
+
+
+      //retrieving and updating ratings of provider
+      // var ratingsSnap = await providersRef
+      //     .child(Provider.of<AppData>(context, listen: false).loggedInUser!.uid)
+      //     .child("ratings")
+      //     .get();
+      var ratingsSnap = provider['ratings'];
+      if (ratingsSnap != null) {
+        String ratings = ratingsSnap.toString();
+        double starCount = double.parse(ratings);
+        Provider.of<AppData>(context, listen: false).updateStarCount(starCount);
+
+        if (starCount <= 1) {
+          Provider.of<AppData>(context, listen: false)
+              .updateTitle("Многу лошо");
+        } else if (starCount <= 2) {
+          Provider.of<AppData>(context, listen: false).updateTitle("Лошо");
+          return;
+        } else if (starCount <= 3.5) {
+          Provider.of<AppData>(context, listen: false).updateTitle("Добро");
+
+          return;
+        } else if (starCount <= 4.5) {
+          Provider.of<AppData>(context, listen: false)
+              .updateTitle("Многу добро");
+
+          return;
+        } else if (starCount <= 5) {
+          Provider.of<AppData>(context, listen: false).updateTitle("Одлично");
+
+          return;
+        }
+      } else {
+        String ratings = "0.0";
+        double starCount = double.parse(ratings);
+        Provider.of<AppData>(context, listen: false).updateStarCount(starCount);
+        Provider.of<AppData>(context, listen: false).updateTitle("Неоценет");
+      }
+    }
+  }
+

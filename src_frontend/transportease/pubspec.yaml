@@ -80,6 +80,7 @@ dependencies:
   firebase_messaging: ^14.6.7
   smooth_star_rating_null_safety: ^1.0.4+2
   geoflutterfire2: ^2.3.15
+  flutter_secure_storage: ^9.2.2
 
 dev_dependencies:
   flutter_test:

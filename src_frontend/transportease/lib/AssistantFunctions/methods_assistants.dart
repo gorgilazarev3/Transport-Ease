@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:transportease/AssistantFunctions/backend_api_assistant.dart';
 import 'package:transportease/AssistantFunctions/http_assistant.dart';
 import 'package:transportease/DataHandler/app_data.dart';
 import 'package:transportease/Models/address.dart';
@@ -58,7 +59,8 @@ class MethodsAssistants {
     String url =
         "https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${ConfigMap.browserMapsKey}";
 
-    final response = await HttpAssistant.getRequestWithCorsProxy(url);
+    // final response = await HttpAssistant.getRequestWithCorsProxy(url);
+    final response = await HttpAssistant.getPlaceDetailsApiFromBackend(placeId);
 
     Navigator.pop(context);
 
@@ -92,8 +94,10 @@ class MethodsAssistants {
       LatLng initialPosition, LatLng destinationPosition) async {
     String url =
         "https://maps.googleapis.com/maps/api/directions/json?origin=${initialPosition.latitude},${initialPosition.longitude}&destination=${destinationPosition.latitude},${destinationPosition.longitude}&key=${ConfigMap.browserMapsKey}";
-
-    final response = await HttpAssistant.getRequestWithCorsProxy(url);
+    var origin = "${initialPosition.latitude},${initialPosition.longitude}";
+    var destination = "${destinationPosition.latitude},${destinationPosition.longitude}";
+    //final response = await HttpAssistant.getRequestWithCorsProxy(url);
+    final response = await HttpAssistant.getDirectionDetailsApiFromBackend(origin, destination);
 
     if (response.statusCode == 200) {
       // If the server did return a 200 OK response,
@@ -152,6 +156,31 @@ class MethodsAssistants {
       AppUser user = AppUser.fromSnapshot(snapshot);
       Provider.of<AppData>(context, listen: false).updateAppUser(user);
     }
+  }
+
+    static void getLoggedInUserFromBackend(BuildContext context) async {
+    //var firebaseUser = FirebaseAuth.instance.currentUser;
+    // String userId = firebaseUser!.uid;
+    // Provider.of<AppData>(context, listen: false)
+    //     .updateFirebaseUser(firebaseUser);
+
+    // DatabaseReference databaseReference =
+    //     FirebaseDatabase.instance.ref().child("users").child(userId);
+
+    // databaseReference.once().then((DataSnapshot snapshot) {
+    //       if (snapshot.value != null) {
+    //         AppUser user = AppUser.fromSnapshot(snapshot);
+    //         Provider.of<AppData>(context).updateAppUser(user);
+    //       }
+    //     } as FutureOr Function(DatabaseEvent value));
+
+    // DataSnapshot snapshot = await databaseReference.get();
+    // if (snapshot.exists) {
+    //   AppUser user = AppUser.fromSnapshot(snapshot);
+    //   Provider.of<AppData>(context, listen: false).updateAppUser(user);
+    // }
+    AppUser user = await BackendAPIAssistant.getLoggedInUser();
+    Provider.of<AppData>(context, listen: false).updateAppUser(user);
   }
 
   static double randomNumber(int num) {

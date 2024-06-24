@@ -83,6 +83,7 @@ dependencies:
   smooth_star_rating_null_safety: ^1.0.4+2
   geoflutterfire2: ^2.3.15
   sensors_plus: ^4.0.2
+  flutter_secure_storage: ^9.2.2
 
 dev_dependencies:
   flutter_test:

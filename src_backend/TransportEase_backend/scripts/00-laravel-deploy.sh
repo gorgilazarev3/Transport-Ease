@@ -12,6 +12,12 @@ php artisan config:cache
 echo "Caching routes..."
 php artisan route:cache
 
+echo "Installing NPM packages..."
+npm install
+
+echo "Running the vite packages"
+npm run dev
+
 echo "Running migrations..."
 php artisan migrate --force
 

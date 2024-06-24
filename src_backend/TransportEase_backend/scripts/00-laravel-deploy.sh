@@ -16,7 +16,7 @@ echo "Installing NPM packages..."
 npm install
 
 echo "Running the vite packages"
-npm run dev
+npm run build
 
 echo "Running migrations..."
 php artisan migrate --force

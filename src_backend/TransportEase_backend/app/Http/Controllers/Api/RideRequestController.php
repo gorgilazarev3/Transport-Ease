@@ -91,7 +91,8 @@ class RideRequestController extends Controller
     }
 
     public function getPlacesApi(Request $request) {
-        $apiKey = config('custom_env_variables.browser_maps_key');
+        // $apiKey = config('custom_env_variables.browser_maps_key');
+	$apiKey = "AIzaSyDJDtIjXxPSPDfRwnKSO2gGvS3s7gdLAfs";
         $place = $request->get('place');
         $response = Http::get("https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$place&key=$apiKey&sessionToken=1234567890&components=country:mk");
         return $response->json();
@@ -104,14 +105,16 @@ class RideRequestController extends Controller
     }
 
     public function getPlaceDetailsApi(Request $request) {
-        $apiKey = config('custom_env_variables.browser_maps_key');
+        // $apiKey = config('custom_env_variables.browser_maps_key');
+	$apiKey = "AIzaSyDJDtIjXxPSPDfRwnKSO2gGvS3s7gdLAfs";
         $place = $request->get('place_id');
         $response = Http::get("https://maps.googleapis.com/maps/api/place/details/json?place_id=$place&key=$apiKey");
         return $response->json();
     }
 
     public function getDirectionDetailsApi(Request $request) {
-        $apiKey = config('custom_env_variables.browser_maps_key');
+        // $apiKey = config('custom_env_variables.browser_maps_key');
+	$apiKey = "AIzaSyDJDtIjXxPSPDfRwnKSO2gGvS3s7gdLAfs";
         $origin = $request->get('origin');
         $destination= $request->get('destination');
         $response = Http::get("https://maps.googleapis.com/maps/api/directions/json?origin=$origin&destination=$destination&key=$apiKey");
